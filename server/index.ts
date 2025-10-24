@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
@@ -16,7 +17,7 @@ connectDB()
 // Middleware
 app.use(
   cors({
-    origin: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+    origin: "http://localhost:3000", // <-- Hardcode the frontend URL
     credentials: true,
   }),
 )
