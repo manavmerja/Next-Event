@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 import { Menu, X, Calendar, User, LogOut } from "lucide-react"
@@ -38,10 +39,14 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Calendar className="h-8 w-8 text-[#a56aff]" />
-            <span className="text-xl font-bold bg-gradient-to-r from-[#a56aff] to-purple-400 bg-clip-text text-transparent">
-              Next Event
-            </span>
+           <Image
+              src="/image.jpg" // Assumes your logo is at 'public/logo.jpg'
+              alt="Next Event Logo"
+              width={200} // Adjust width as needed
+              height={50} // Adjust height as needed
+              className="h-16 w-auto" // Maintains aspect ratio
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
