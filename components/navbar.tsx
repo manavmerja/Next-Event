@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // 1. IMPORT 'useEffect'
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Menu, X, Calendar, User, LogOut } from "lucide-react"
+import { Menu, X, User, LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,7 +19,17 @@ import {
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  // 2. REMOVED 'loading' - we don't need it for this
+  const { user, logout } = useAuth() 
+
+  // 3. ADDED 'isClient' STATE
+  const [isClient, setIsClient] = useState(false)
+
+  // 4. ADDED 'useEffect' TO SET 'isClient'
+  useEffect(() => {
+    // This code only runs in the browser, AFTER the page loads
+    setIsClient(true)
+  }, [])
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -39,12 +49,12 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-           <Image
-              src="/image.jpg" // Assumes your logo is at 'public/logo.jpg'
+            <Image
+              src="/image.jpg"
               alt="Next Event Logo"
-              width={200} // Adjust width as needed
-              height={50} // Adjust height as needed
-              className="h-16 w-auto" // Maintains aspect ratio
+              width={200}
+              height={50}
+              className="h-12 w-auto" // Set to h-12 as we discussed before
               priority
             />
           </Link>
@@ -64,9 +74,14 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* User Menu / Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+          {/* 5. UPDATED USER MENU / AUTH BUTTONS */}
+          <div className="hidden md:flex items-center space-x-4 h-9">
+            {!isClient ? (
+              // On the server OR before client loads, show a blank placeholder
+              // This placeholder is 'h-9 w-24', so we match it.
+              <div className="h-9 w-24 rounded-md" />
+            ) : user ? (
+              // AFTER client loads, AND user is logged in
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center space-x-2">
@@ -95,6 +110,7 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
+              // AFTER client loads, AND user is NOT logged in
               <>
                 <Button variant="ghost" asChild>
                   <Link href="/auth/login">Login</Link>
@@ -113,7 +129,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* 6. UPDATED MOBILE MENU LOGIC */}
       {mobileMenuOpen && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -134,7 +150,13 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            {user ? (
+            
+            {/* This logic MUST match the desktop logic to prevent hydration errors */}
+            {!isClient ? (
+              // Show a blank placeholder on server
+              <div className="flex flex-col space-y-2 pt-2 h-[84px]" />
+            ) : user ? (
+              // Show mobile user links on client
               <>
                 <Link
                   href="/dashboard"
@@ -160,6 +182,7 @@ export function Navbar() {
                 </button>
               </>
             ) : (
+              // Show mobile auth buttons on client
               <div className="flex flex-col space-y-2 pt-2">
                 <Button variant="outline" asChild className="w-full bg-transparent">
                   <Link href="/auth/login">Login</Link>
