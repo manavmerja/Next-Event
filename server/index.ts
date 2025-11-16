@@ -14,13 +14,34 @@ const PORT = process.env.PORT || 3001
 // Connect to MongoDB
 connectDB()
 
+// --- THIS IS THE UPDATED SECTION ---
+
+// List of allowed URLs (origins)
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://YOUR-VERCEL-URL.vercel.app" // <-- ⚠️ REPLACE THIS WITH YOUR VERCEL URL
+];
+
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000", // <-- Hardcode the frontend URL
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like Postman, mobile apps, etc.)
+      if (!origin) return callback(null, true);
+      
+      // Check if the incoming origin is in our allowed list
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   }),
 )
+
+// --- END OF UPDATED SECTION ---
+
 app.use(express.json())
 app.use(cookieParser())
 
