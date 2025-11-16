@@ -26,15 +26,17 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman, mobile apps, etc.)
-      if (!origin) return callback(null, true);
+      // 'origin' is the URL of the frontend (your Vercel site)
       
-      // Check if the incoming origin is in our allowed list
-      if (allowedOrigins.indexOf(origin) === -1) {
+      // 1. If the origin is in our list, allow it.
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        // 2. If it's NOT in the list, LOG IT and then reject it.
+        console.error(`REJECTED ORIGIN: ${origin}`); // <-- THIS IS THE NEW DEBUG LINE
         const msg = "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
+        callback(new Error(msg), false);
       }
-      return callback(null, true);
     },
     credentials: true,
   }),
