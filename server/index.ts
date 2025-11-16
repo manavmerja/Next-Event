@@ -9,31 +9,31 @@ import eventRoutes from "./routes/events"
 import userRoutes from "./routes/users"
 
 const app = express()
+
+// --- THIS IS THE FIX ---
+// Tell Express to trust the first proxy (Render's proxy)
+app.set('trust proxy', 1); 
+// ----------------------
+
 const PORT = process.env.PORT || 3001
 
 // Connect to MongoDB
 connectDB()
 
-// --- THIS IS THE UPDATED SECTION ---
-
 // List of allowed URLs (origins)
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://v0-event-aggregator-web-app.vercel.app" // <-- ⚠️ YAHAN SE SLASH HATA DIYA HAI
+  "https://v0-event-aggregator-web-app.vercel.app" // Make sure this is your correct URL
 ];
 
 // Middleware
 app.use(
   cors({
     origin: function (origin, callback) {
-      // 'origin' is the URL of the frontend (your Vercel site)
-      
-      // 1. If the origin is in our list, allow it.
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        // 2. If it's NOT in the list, LOG IT and then reject it.
-        console.error(`REJECTED ORIGIN: ${origin}`); // <-- THIS IS THE NEW DEBUG LINE
+        console.error(`REJECTED ORIGIN: ${origin}`);
         const msg = "The CORS policy for this site does not allow access from the specified Origin.";
         callback(new Error(msg), false);
       }
@@ -41,8 +41,6 @@ app.use(
     credentials: true,
   }),
 )
-
-// --- END OF UPDATED SECTION ---
 
 app.use(express.json())
 app.use(cookieParser())
