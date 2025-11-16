@@ -19,7 +19,7 @@ connectDB()
 // List of allowed URLs (origins)
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://v0-event-aggregator-web-app.vercel.app/" // <-- ⚠️ REPLACE THIS WITH YOUR VERCEL URL
+  "https://v0-event-aggregator-web-app.vercel.app" // <-- ⚠️ YAHAN SE SLASH HATA DIYA HAI
 ];
 
 // Middleware
