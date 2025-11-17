@@ -10,10 +10,8 @@ import userRoutes from "./routes/users"
 
 const app = express()
 
-// --- THIS IS THE FIX ---
 // Tell Express to trust the first proxy (Render's proxy)
 app.set('trust proxy', 1); 
-// ----------------------
 
 const PORT = process.env.PORT || 3001
 
@@ -23,19 +21,24 @@ connectDB()
 // List of allowed URLs (origins)
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://v0-event-aggregator-web-app.vercel.app" // Make sure this is your correct URL
+  "https://v0-event-aggregator-web-app.vercel.app" // YEH AAPKI ASLI URL HAI
 ];
 
 // Middleware
 app.use(
   cors({
     origin: function (origin, callback) {
+      // 'origin' is the URL of the frontend (your Vercel site)
+      
+      // 1. If the origin is in our list, allow it.
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
+        // 2. If it's NOT in the list, LOG IT and then REJECT IT (bina crash kiye).
         console.error(`REJECTED ORIGIN: ${origin}`);
-        const msg = "The CORS policy for this site does not allow access from the specified Origin.";
-        callback(new Error(msg), false);
+        
+        // --- YEH LINE CHANGE HUI HAI ---
+        callback(null, false); // Humne 'new Error(msg)' ko 'null' se badal diya
       }
     },
     credentials: true,
