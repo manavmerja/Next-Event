@@ -6,11 +6,15 @@ if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable")
 }
 
-let cached = global.mongoose
+// --- FIX IS HERE ---
+// We cast 'global' to 'any' to tell TypeScript
+// that we know what we're doing and want to add a new property.
+let cached = (global as any).mongoose
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null }
+  cached = (global as any).mongoose = { conn: null, promise: null }
 }
+// --- END OF FIX ---
 
 async function connectDB() {
   if (cached.conn) {
