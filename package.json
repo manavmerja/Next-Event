@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "next dev",
     "build:server": "tsc --project tsconfig.server.json",
-"start:server": "ls -lR dist && node dist/index.js",
+    "start:server": "node dist/index.js",
     "lint": "next lint",
     "seed": "tsx server/scripts/seed.ts",
     "start": "next start"

@@ -2,11 +2,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
-    "moduleResolution": "node", 
+    "moduleResolution": "node",
     "outDir": "./dist",
     "rootDir": "./server",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": false 
   },
   "include": ["server/**/*.ts"],
   "exclude": ["node_modules", "app", "components"]
