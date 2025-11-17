@@ -1,4 +1,4 @@
-import express from "express"
+import express, { Request, Response } from "express" // 1. IMPORTED TYPES
 import bcrypt from "bcryptjs"
 import { body, validationResult } from "express-validator"
 import User from "../models/User"
@@ -17,7 +17,8 @@ router.post(
     body("department").trim().notEmpty().withMessage("Department is required"),
     body("phone").trim().notEmpty().withMessage("Phone is required"),
   ],
-  async (req, res) => {
+  // 2. APPLIED TYPES
+  async (req: Request, res: Response) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() })
@@ -53,11 +54,13 @@ router.post(
         role: user.role,
       })
 
+      // --- COOKIE FIX ---
       // Set cookie
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none", 
+        path: "/", 
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
 
@@ -84,7 +87,8 @@ router.post(
     body("email").isEmail().withMessage("Valid email is required"),
     body("password").notEmpty().withMessage("Password is required"),
   ],
-  async (req, res) => {
+  // 3. APPLIED TYPES
+  async (req: Request, res: Response) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() })
@@ -112,11 +116,13 @@ router.post(
         role: user.role,
       })
 
+      // --- COOKIE FIX ---
       // Set cookie
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none", 
+        path: "/", 
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
 
@@ -137,13 +143,19 @@ router.post(
 )
 
 // POST /api/auth/logout
-router.post("/logout", (req, res) => {
-  res.clearCookie("token")
+router.post("/logout", (req: Request, res: Response) => { // Yahaan bhi add karna accha hai
+  // --- COOKIE FIX ---
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+    path: "/",
+  })
   res.json({ message: "Logged out successfully" })
 })
 
 // GET /api/auth/me
-router.get("/me", async (req, res) => {
+router.get("/me", async (req: Request, res: Response) => { // Yahaan bhi add karna accha hai
   try {
     const token = req.cookies.token
     if (!token) {

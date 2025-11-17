@@ -5,7 +5,8 @@
     "moduleResolution": "node", 
     "outDir": "./dist",
     "rootDir": "./server",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["server/**/*.ts"],
   "exclude": ["node_modules", "app", "components"]
