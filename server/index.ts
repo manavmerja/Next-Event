@@ -21,51 +21,47 @@ connectDB()
 // List of allowed URLs (origins)
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://v0-event-aggregator-web-app.vercel.app" // YEH AAPKI ASLI URL HAI
+  "https://v0-event-aggregator-web-app.vercel.app" // Make sure this is your correct URL
 ];
 
-// Middleware
+// --- MIDDLEWARE SECTION ---
+
+// 1. Basic middleware (CORS, JSON, Cookies)
 app.use(
   cors({
     origin: function (origin, callback) {
-      // 'origin' is the URL of the frontend (your Vercel site)
-      
-      // 1. If the origin is in our list, allow it.
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        // 2. If it's NOT in the list, LOG IT and then REJECT IT (bina crash kiye).
         console.error(`REJECTED ORIGIN: ${origin}`);
-        
-        // --- YEH LINE CHANGE HUI HAI ---
-        callback(null, false); // Humne 'new Error(msg)' ko 'null' se badal diya
+        callback(null, false); // Fixed: Doesn't crash server
       }
     },
     credentials: true,
   }),
 )
-
 app.use(express.json())
 app.use(cookieParser())
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-})
-app.use("/api/", limiter)
-
-// Routes
-app.use("/api/auth", authRoutes)
-app.use("/api/events", eventRoutes)
-app.use("/api/users", userRoutes)
-
-// Health check
+// 2. Health Check Route (Moved BEFORE Rate Limiter)
+// This ensures our health check is never rate-limited
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() })
 })
 
-// Error handling
+// 3. Rate Limiting (Applied to all other /api/ routes)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+})
+app.use("/api/", limiter) // This will now apply to auth, events, and users
+
+// 4. Main API Routes
+app.use("/api/auth", authRoutes)
+app.use("/api/events", eventRoutes)
+app.use("/api/users", userRoutes)
+
+// 5. Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Server error:", err)
   res.status(500).json({ error: "Internal server error" })
