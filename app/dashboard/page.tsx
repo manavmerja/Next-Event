@@ -56,8 +56,12 @@ export default function DashboardPage() {
     return null
   }
 
-  const upcomingEvents = registrations.filter((reg) => new Date(reg.eventId.startsAt) > new Date())
-  const pastEvents = registrations.filter((reg) => new Date(reg.eventId.startsAt) <= new Date())
+  // --- FIX IS HERE ---
+  // We add 'reg.eventId &&' to both filters.
+  // This checks if 'reg.eventId' exists (is not null) *before* trying to access 'reg.eventId.startsAt'
+  const upcomingEvents = registrations.filter((reg) => reg.eventId && new Date(reg.eventId.startsAt) > new Date())
+  const pastEvents = registrations.filter((reg) => reg.eventId && new Date(reg.eventId.startsAt) <= new Date())
+  // --- END OF FIX ---
 
   return (
     <>
