@@ -57,8 +57,9 @@ export default function CreateEventPage() {
     try {
       const eventData = {
         ...formData,
-        latitude: Number.parseFloat(formData.latitude),
-        longitude: Number.parseFloat(formData.longitude),
+        // 1. Make Lat/Lng optional (Default to 0 if empty)
+        latitude: formData.latitude ? Number.parseFloat(formData.latitude) : 0,
+        longitude: formData.longitude ? Number.parseFloat(formData.longitude) : 0,
       }
 
       await eventsAPI.create(eventData)
@@ -158,7 +159,8 @@ export default function CreateEventPage() {
                           value={formData.startsAt}
                           onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
                           required
-                          className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
+                          // 2. Added 'dark:[color-scheme:dark]' to fix icon visibility
+                          className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff] dark:[color-scheme:dark]"
                         />
                       </div>
                       <div className="space-y-2">
@@ -168,7 +170,8 @@ export default function CreateEventPage() {
                           type="datetime-local"
                           value={formData.endsAt}
                           onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
-                          className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
+                          // 2. Added 'dark:[color-scheme:dark]' to fix icon visibility
+                          className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff] dark:[color-scheme:dark]"
                         />
                       </div>
                     </div>
@@ -200,10 +203,10 @@ export default function CreateEventPage() {
                       />
                     </div>
 
-                    {/* Coordinates */}
+                    {/* Coordinates (Now Optional) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="latitude">Latitude *</Label>
+                        <Label htmlFor="latitude">Latitude (Optional)</Label>
                         <Input
                           id="latitude"
                           type="number"
@@ -211,12 +214,12 @@ export default function CreateEventPage() {
                           placeholder="40.7128"
                           value={formData.latitude}
                           onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                          required
+                          // 3. Removed 'required'
                           className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="longitude">Longitude *</Label>
+                        <Label htmlFor="longitude">Longitude (Optional)</Label>
                         <Input
                           id="longitude"
                           type="number"
@@ -224,7 +227,7 @@ export default function CreateEventPage() {
                           placeholder="-74.0060"
                           value={formData.longitude}
                           onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                          required
+                          // 3. Removed 'required'
                           className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                         />
                       </div>
