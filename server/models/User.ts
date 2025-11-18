@@ -8,6 +8,9 @@ export interface IUser extends Document {
   department: string
   phone: string
   role: "student" | "admin"
+  // --- NEW FIELD ---
+  bookmarks: mongoose.Types.ObjectId[]
+  // -----------------
   createdAt: Date
 }
 
@@ -48,6 +51,14 @@ const UserSchema = new Schema<IUser>({
     enum: ["student", "admin"],
     default: "student",
   },
+  // --- NEW FIELD DEFINITION ---
+  bookmarks: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event",
+    },
+  ],
+  // ----------------------------
   createdAt: {
     type: Date,
     default: Date.now,
