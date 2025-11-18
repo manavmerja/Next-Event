@@ -3,23 +3,23 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { authAPI } from "./api"
 
+// 1. Update User Interface to include bookmarks
 interface User {
   id: string
   fullName: string
   email: string
   role: "student" | "admin"
-  studentId?: string
-  department?: string
-  phone?: string
+  bookmarks?: string[] // <-- ADDED THIS
 }
 
+// 2. Update Context Type to include refreshUser
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  signup: (userData: any) => Promise<void>
+  login: (userData: User) => void
   logout: () => Promise<void>
-  refetch: () => Promise<void>
+  checkAuth: () => Promise<void>
+  refreshUser: () => Promise<void> // <-- ADDED THIS
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchUser = async () => {
+  const checkAuth = async () => {
     try {
       const data = await authAPI.getMe()
       setUser(data.user)
@@ -40,30 +40,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    fetchUser()
+    checkAuth()
   }, [])
 
-  const login = async (email: string, password: string) => {
-    const data = await authAPI.login({ email, password })
-    setUser(data.user)
-  }
-
-  const signup = async (userData: any) => {
-    const data = await authAPI.signup(userData)
-    setUser(data.user)
+  const login = (userData: User) => {
+    setUser(userData)
   }
 
   const logout = async () => {
-    await authAPI.logout()
-    setUser(null)
+    try {
+      await authAPI.logout()
+      setUser(null)
+    } catch (error) {
+      console.error("Logout failed", error)
+    }
   }
 
-  const refetch = async () => {
-    await fetchUser()
+  // 3. Implement the refreshUser function
+  const refreshUser = async () => {
+    await checkAuth()
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, refetch }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth, refreshUser }}>
+      {children}
+    </AuthContext.Provider>
   )
 }
 

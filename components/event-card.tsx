@@ -1,46 +1,78 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Calendar, MapPin, Clock } from "lucide-react"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { motion } from "framer-motion"
+import { Calendar, MapPin, ArrowRight, Heart } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/lib/auth-context"
+import { eventsAPI } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 interface EventCardProps {
-  event: {
-    _id: string
-    title: string
-    description: string
-    category: string
-    startsAt: string
-    venue: string
-    locationText: string
-    bannerUrl: string
-  }
+  event: any
   index?: number
 }
 
 export function EventCard({ event, index = 0 }: EventCardProps) {
-  const eventDate = new Date(event.startsAt)
-  const formattedDate = eventDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
-  const formattedTime = eventDate.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+  const { user, refreshUser } = useAuth() // refreshUser might be needed to update local bookmarks
+  const { toast } = useToast()
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const categoryColors: Record<string, string> = {
-    Hackathon: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-    Technical: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-    Cultural: "bg-pink-500/20 text-pink-300 border-pink-500/30",
-    Sports: "bg-green-500/20 text-green-300 border-green-500/30",
-    Webinar: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-    Seminar: "bg-orange-500/20 text-orange-300 border-orange-500/30",
-    Other: "bg-gray-500/20 text-gray-300 border-gray-500/30",
+  // Check if the event is already bookmarked by the user
+  useEffect(() => {
+    if (user && user.bookmarks && user.bookmarks.includes(event._id)) {
+      setIsBookmarked(true)
+    } else {
+      setIsBookmarked(false)
+    }
+  }, [user, event._id])
+
+  const handleBookmark = async (e: React.MouseEvent) => {
+    e.preventDefault() // Prevent clicking the link to details page
+    e.stopPropagation()
+
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to bookmark events",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Optimistic UI update (turant rang badal do)
+      const newState = !isBookmarked
+      setIsBookmarked(newState)
+
+      await eventsAPI.toggleBookmark(event._id)
+      
+      // Backend se confirm hone ke baad user data refresh karo
+      // (This ensures local storage/context stays in sync)
+      // Note: Agar aapke auth context mein refreshUser nahi hai, toh page reload par update hoga.
+      
+      toast({
+        title: newState ? "Bookmarked!" : "Removed",
+        description: newState ? "Event added to your wishlist" : "Event removed from wishlist",
+      })
+    } catch (error) {
+      // Error aayi toh wapas purana state kar do
+      setIsBookmarked(!isBookmarked)
+      toast({
+        title: "Error",
+        description: "Failed to update bookmark",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -48,41 +80,59 @@ export function EventCard({ event, index = 0 }: EventCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.1 }}
-      whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+      whileHover={{ y: -5 }}
     >
       <Link href={`/events/${event._id}`}>
-        <Card className="overflow-hidden border-[#a56aff]/20 bg-black/50 backdrop-blur-sm hover:border-[#a56aff]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#a56aff]/20 h-full">
+        <Card className="h-full overflow-hidden bg-black/40 border-[#a56aff]/20 backdrop-blur-sm hover:border-[#a56aff]/50 transition-colors group relative">
           <div className="relative h-48 w-full overflow-hidden">
             <Image
-              src={event.bannerUrl || "/placeholder.svg"}
+              src={event.bannerUrl || "/placeholder.svg?height=400&width=600"}
               alt={event.title}
               fill
-              className="object-cover transition-transform duration-300 hover:scale-110"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
-            <div className="absolute top-3 right-3">
-              <Badge className={categoryColors[event.category] || categoryColors.Other}>{event.category}</Badge>
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="bg-black/50 hover:bg-black/70 text-white rounded-full h-8 w-8 backdrop-blur-md"
+                onClick={handleBookmark}
+                disabled={loading}
+              >
+                <Heart 
+                  className={cn("h-4 w-4 transition-colors", isBookmarked ? "fill-[#a56aff] text-[#a56aff]" : "text-white")} 
+                />
+              </Button>
+            </div>
+            <div className="absolute top-4 left-4">
+              <Badge className="bg-[#a56aff] hover:bg-[#a56aff]/80">{event.category}</Badge>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 pt-12">
+              <div className="flex items-center text-xs text-gray-300 mb-1">
+                <Calendar className="h-3 w-3 mr-1 text-[#a56aff]" />
+                {new Date(event.startsAt).toLocaleDateString(undefined, {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </div>
             </div>
           </div>
-          <CardContent className="p-4 space-y-3">
-            <h3 className="font-semibold text-lg line-clamp-2 text-balance">{event.title}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4 text-[#a56aff]" />
-                <span>{formattedDate}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4 text-[#a56aff]" />
-                <span>{formattedTime}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 text-[#a56aff]" />
-                <span className="line-clamp-1">{event.locationText}</span>
-              </div>
+          <CardHeader className="p-4 pb-0">
+            <h3 className="text-xl font-bold text-white line-clamp-1 group-hover:text-[#a56aff] transition-colors">
+              {event.title}
+            </h3>
+          </CardHeader>
+          <CardContent className="p-4">
+            <p className="text-gray-400 text-sm line-clamp-2 mb-3">{event.description}</p>
+            <div className="flex items-center text-xs text-gray-500">
+              <MapPin className="h-3 w-3 mr-1" />
+              {event.locationText}
             </div>
           </CardContent>
-          <CardFooter className="p-4 pt-0">
-            <span className="text-sm text-[#a56aff] hover:underline">View Details →</span>
+          <CardFooter className="p-4 pt-0 flex items-center justify-between">
+            <span className="text-xs text-[#a56aff] font-medium">View Details</span>
+            <ArrowRight className="h-4 w-4 text-[#a56aff] transform group-hover:translate-x-1 transition-transform" />
           </CardFooter>
         </Card>
       </Link>

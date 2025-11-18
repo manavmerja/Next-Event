@@ -54,6 +54,10 @@ export const eventsAPI = {
   delete: (id: string) => apiRequest(`/events/${id}`, { method: "DELETE" }),
   register: (id: string) => apiRequest(`/events/${id}/register`, { method: "POST" }),
   cancelRegistration: (id: string) => apiRequest(`/events/${id}/register`, { method: "DELETE" }),
+
+  // --- NEW FUNCTION ---
+  toggleBookmark: (id: string) => apiRequest(`/events/${id}/bookmark`, { method: "POST" }),
+  
 }
 
 export const usersAPI = {
