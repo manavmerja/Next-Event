@@ -8,70 +8,56 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
+import { adminAPI } from "@/lib/api" // 1. IMPORT OUR API
+import { useAuth } from "@/lib/auth-context" // Import useAuth to get current admin's ID
 
 export default function ManageUsersPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const { user: adminUser } = useAuth() // Get the currently logged-in admin
 
   useEffect(() => {
     fetchUsers()
   }, [])
 
+  // 2. USE OUR 'adminAPI'
   const fetchUsers = async () => {
     try {
-      const response = await fetch("/api/users", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      const data = await response.json()
+      // This now uses our 'apiRequest' which sends the auth cookie
+      const data = await adminAPI.getAllUsers()
       setUsers(data.users || [])
     } catch (error) {
       console.error("Failed to fetch users:", error)
-      toast({ title: "Error", description: "Failed to load users" })
+      toast({ title: "Error", description: "Failed to load users", variant: "destructive" })
     } finally {
       setLoading(false)
     }
   }
 
+  // 3. USE OUR 'adminAPI'
   const handleChangeRole = async (userId: string, newRole: string) => {
     try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ role: newRole }),
-      })
-      if (!response.ok) throw new Error("Failed to update role")
-
+      await adminAPI.updateUserRole(userId, newRole)
       setUsers(users.map((u) => (u._id === userId ? { ...u, role: newRole } : u)))
       toast({ title: "Success", description: `User role changed to ${newRole}` })
     } catch (error) {
       console.error("Failed to update role:", error)
-      toast({ title: "Error", description: "Failed to update role" })
+      toast({ title: "Error", description: "Failed to update role", variant: "destructive" })
     }
   }
 
+  // 4. USE OUR 'adminAPI'
   const handleDeleteUser = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return
 
     try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      if (!response.ok) throw new Error("Failed to delete user")
-
+      await adminAPI.deleteUser(userId)
       setUsers(users.filter((u) => u._id !== userId))
       toast({ title: "Success", description: "User deleted successfully" })
     } catch (error) {
       console.error("Failed to delete user:", error)
-      toast({ title: "Error", description: "Failed to delete user" })
+      toast({ title: "Error", description: "Failed to delete user", variant: "destructive" })
     }
   }
 
@@ -120,48 +106,54 @@ export default function ManageUsersPage() {
                         <TableCell>
                           <span
                             className={`px-2 py-1 rounded text-xs font-medium ${
-                              user.role === "Admin"
+                              // 5. FIX THE LOGIC (use lowercase)
+                              user.role === "admin"
                                 ? "bg-purple-900/30 text-purple-400"
                                 : "bg-gray-900/30 text-gray-400"
                             }`}
                           >
-                            {user.role}
+                            {/* 6. FIX THE CAPITALIZATION */}
+                            {user.role === 'admin' ? 'Admin' : 'Student'}
                           </span>
                         </TableCell>
                         <TableCell className="text-gray-300">{user.studentId || "-"}</TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" disabled={user._id === adminUser?.id}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-[#1a1a1a] border-[#a56aff]/20">
-                              {user.role !== "Admin" && (
+                              {/* 7. FIX THE LOGIC (use lowercase) */}
+                              {user.role !== "admin" && (
                                 <DropdownMenuItem
                                   className="text-gray-300 focus:text-white focus:bg-[#a56aff]/20 cursor-pointer"
-                                  onClick={() => handleChangeRole(user._id, "Admin")}
+                                  onClick={() => handleChangeRole(user._id, "admin")}
                                 >
                                   <Shield className="h-4 w-4 mr-2" />
                                   Change Role to Admin
                                 </DropdownMenuItem>
                               )}
-                              {user.role !== "Student" && (
+                              {user.role !== "student" && (
                                 <DropdownMenuItem
                                   className="text-gray-300 focus:text-white focus:bg-[#a56aff]/20 cursor-pointer"
-                                  onClick={() => handleChangeRole(user._id, "Student")}
+                                  onClick={() => handleChangeRole(user._id, "student")}
                                 >
                                   <User className="h-4 w-4 mr-2" />
                                   Change Role to Student
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem
-                                className="text-red-400 focus:text-red-300 focus:bg-red-900/20 cursor-pointer"
-                                onClick={() => handleDeleteUser(user._id)}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete User
-                              </DropdownMenuItem>
+                              {/* Add check to prevent admin from deleting themself */}
+                              {user._id !== adminUser?.id && (
+                                <DropdownMenuItem
+                                  className="text-red-400 focus:text-red-300 focus:bg-red-900/20 cursor-pointer"
+                                  onClick={() => handleDeleteUser(user._id)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete User
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

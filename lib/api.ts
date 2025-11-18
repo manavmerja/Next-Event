@@ -59,3 +59,20 @@ export const eventsAPI = {
 export const usersAPI = {
   getMyRegistrations: () => apiRequest("/users/me/registrations"),
 }
+
+// Add this new object to your lib/api.ts file
+
+export const adminAPI = {
+  getAllUsers: () => apiRequest("/users"),
+  
+  updateUserRole: (userId: string, newRole: string) =>
+    apiRequest(`/users/${userId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ role: newRole }),
+    }),
+
+  deleteUser: (userId: string) =>
+    apiRequest(`/users/${userId}`, {
+      method: "DELETE",
+    }),
+}
