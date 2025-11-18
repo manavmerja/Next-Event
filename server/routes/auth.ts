@@ -71,6 +71,7 @@ router.post(
           fullName: user.fullName,
           email: user.email,
           role: user.role,
+          bookmarks: user.bookmarks
         },
       })
     } catch (error) {
@@ -133,6 +134,7 @@ router.post(
           fullName: user.fullName,
           email: user.email,
           role: user.role,
+          bookmarks: user.bookmarks
         },
       })
     } catch (error) {

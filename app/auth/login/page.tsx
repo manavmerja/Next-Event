@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useAuth } from "@/lib/auth-context"
+import { authAPI } from "@/lib/api" // 1. IMPORT authAPI
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,13 +29,26 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      await login(formData.email, formData.password)
+      // 2. Call the API to authenticate
+      const response = await authAPI.login(formData)
+      
+      // 3. Update the Global State with the user data
+      login(response.user)
+
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",
       })
-      router.push("/dashboard")
+
+      // 4. SMART REDIRECT LOGIC
+      if (response.user.role === "admin") {
+        router.push("/admin/dashboard")
+      } else {
+        router.push("/dashboard")
+      }
+
     } catch (error: any) {
+      console.error("Login error:", error)
       toast({
         title: "Login failed",
         description: error.message || "Invalid credentials",
