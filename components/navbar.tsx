@@ -91,10 +91,14 @@ export function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer">
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
+  {/* Agar admin hai toh /admin/dashboard, warna /dashboard */}
+  <Link 
+    href={user.role === "admin" ? "/admin/dashboard" : "/dashboard"} 
+    className="cursor-pointer"
+  >
+    {user.role === "admin" ? "Admin Dashboard" : "Dashboard"}
+  </Link>
+</DropdownMenuItem>
                   {user.role === "admin" && (
                     <DropdownMenuItem asChild>
                       <Link href="/events/new" className="cursor-pointer">
