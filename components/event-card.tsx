@@ -100,7 +100,12 @@ export function EventCard({ event, index = 0 }: EventCardProps) {
                 disabled={loading}
               >
                 <Heart 
-                  className={cn("h-4 w-4 transition-colors", isBookmarked ? "fill-[#a56aff] text-[#a56aff]" : "text-white")} 
+                  className={cn(
+  "h-4 w-4 transition-colors",
+  isBookmarked 
+    ? "fill-[#00F0FF] text-[#00F0FF] drop-shadow-[0_0_5px_#00F0FF]" // Cyan Color + Glow Effect
+    : "text-white"
+)}
                 />
               </Button>
             </div>
