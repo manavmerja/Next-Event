@@ -1,3 +1,5 @@
+
+import adminRoutes from "./routes/admin"
 import 'dotenv/config';
 import express from "express"
 import cors from "cors"
@@ -60,6 +62,7 @@ app.use("/api/", limiter) // This will now apply to auth, events, and users
 app.use("/api/auth", authRoutes)
 app.use("/api/events", eventRoutes)
 app.use("/api/users", userRoutes)
+app.use("/api/admin", adminRoutes)
 
 // 5. Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

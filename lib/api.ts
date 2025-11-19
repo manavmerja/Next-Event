@@ -68,6 +68,8 @@ export const usersAPI = {
 
 export const adminAPI = {
   getAllUsers: () => apiRequest("/users"),
+
+  getAllRegistrations: () => apiRequest("/admin/registrations"),
   
   updateUserRole: (userId: string, newRole: string) =>
     apiRequest(`/users/${userId}`, {

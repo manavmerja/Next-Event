@@ -2,166 +2,131 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Calendar, Users, ClipboardCheck, TrendingUp } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { LayoutDashboard, Calendar, Users, ClipboardCheck, ArrowUpRight } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { eventsAPI } from "@/lib/api"
+import { Badge } from "@/components/ui/badge"
+import { adminAPI, eventsAPI } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
-export default function AdminDashboardPage() {
-  const [stats, setStats] = useState({
-    totalEvents: 0,
-    totalUsers: 0,
-    totalRegistrations: 0,
-  })
-  const [recentActivity, setRecentActivity] = useState<any[]>([])
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({ events: 0, users: 0, registrations: 0 })
+  const [recentRegistrations, setRecentRegistrations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch all events and users for stats
-        const eventsData = await eventsAPI.getAll({ limit: 1000 })
-
-        // Calculate stats
-        const totalRegistrations = eventsData.events.reduce(
-          (sum: number, event: any) => sum + (event.registrations?.length || 0),
-          0,
-        )
+        // Fetch all data in parallel
+        const [eventsData, usersData, registrationsData] = await Promise.all([
+          eventsAPI.getAll(),
+          adminAPI.getAllUsers(),
+          adminAPI.getAllRegistrations(),
+        ])
 
         setStats({
-          totalEvents: eventsData.events.length,
-          totalUsers: 1200, // Mock data
-          totalRegistrations: totalRegistrations,
+          events: eventsData.pagination.total,
+          users: usersData.users.length,
+          registrations: registrationsData.registrations.length,
         })
 
-        // Mock recent activity
-        const activity = eventsData.events.slice(0, 5).map((event: any) => ({
-          id: event._id,
-          user: `User ${Math.floor(Math.random() * 1000)}`,
-          activity: `Registered for ${event.title}`,
-          date: new Date(event.createdAt).toLocaleDateString(),
-        }))
-        setRecentActivity(activity)
+        setRecentRegistrations(registrationsData.registrations)
       } catch (error) {
-        console.error("Failed to fetch dashboard data:", error)
+        console.error("Dashboard data error:", error)
+        toast({ title: "Error", description: "Failed to load dashboard data", variant: "destructive" })
       } finally {
         setLoading(false)
       }
     }
 
     fetchData()
-  }, [])
+  }, [toast])
 
-  const statCards = [
-    {
-      title: "Total Events",
-      value: stats.totalEvents,
-      icon: Calendar,
-      color: "text-blue-400",
-      bgColor: "bg-blue-400/10",
-    },
-    {
-      title: "Total Users",
-      value: stats.totalUsers,
-      icon: Users,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-400/10",
-    },
-    {
-      title: "Total Registrations",
-      value: stats.totalRegistrations,
-      icon: ClipboardCheck,
-      color: "text-purple-400",
-      bgColor: "bg-purple-400/10",
-    },
-  ]
+  if (loading) return <div className="p-8 text-white">Loading dashboard...</div>
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
-      {/* Page title */}
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Admin Dashboard</h1>
-        <p className="text-gray-400">Welcome back! Here's an overview of your events and users.</p>
+        <p className="text-gray-400">Overview of platform activity</p>
       </div>
 
-      {/* Stats grid with fade-in animation */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-      >
-        {statCards.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <Card className="bg-[#0a0a0a] border-[#a56aff]/20 hover:border-[#a56aff]/40 transition-colors">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-gray-300">{stat.title}</CardTitle>
-                    <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                      <Icon className={`h-5 w-5 ${stat.color}`} />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">{loading ? "-" : stat.value}</div>
-                  <p className="text-xs text-gray-500 mt-1">Total this month</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )
-        })}
-      </motion.div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {[
+          { title: "Total Events", value: stats.events, icon: Calendar, color: "text-blue-400" },
+          { title: "Total Users", value: stats.users, icon: Users, color: "text-green-400" },
+          { title: "Total Registrations", value: stats.registrations, icon: ClipboardCheck, color: "text-purple-400" },
+        ].map((stat, index) => (
+          <motion.div
+            key={stat.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card className="bg-[#0a0a0a] border-[#a56aff]/20">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-400">{stat.title}</CardTitle>
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-white">{stat.value}</div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
 
-      {/* Recent Activity Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
+      {/* Recent Registrations Table */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
         <Card className="bg-[#0a0a0a] border-[#a56aff]/20">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-white">Recent Activity</CardTitle>
-                <CardDescription>Latest registrations and user activities</CardDescription>
-              </div>
-              <TrendingUp className="h-5 w-5 text-[#a56aff]" />
-            </div>
+            <CardTitle className="text-white flex items-center gap-2">
+              <ArrowUpRight className="h-5 w-5 text-[#a56aff]" />
+              Recent Registrations (Who participating in which event)
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <p className="text-gray-400">Loading...</p>
+            {recentRegistrations.length === 0 ? (
+              <p className="text-gray-400">No registrations yet.</p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-[#a56aff]/20 hover:bg-transparent">
-                    <TableHead className="text-gray-400">User</TableHead>
-                    <TableHead className="text-gray-400">Activity</TableHead>
-                    <TableHead className="text-gray-400">Date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentActivity.map((activity, index) => (
-                    <motion.tr
-                      key={index}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="border-[#a56aff]/20 hover:bg-[#a56aff]/5 transition-colors"
-                    >
-                      <TableCell className="text-gray-300">{activity.user}</TableCell>
-                      <TableCell className="text-gray-300">{activity.activity}</TableCell>
-                      <TableCell className="text-gray-400 text-sm">{activity.date}</TableCell>
-                    </motion.tr>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-[#a56aff]/20 hover:bg-transparent">
+                      <TableHead className="text-gray-400">Student Name</TableHead>
+                      <TableHead className="text-gray-400">Email</TableHead>
+                      <TableHead className="text-gray-400">Event Name</TableHead>
+                      <TableHead className="text-gray-400">Event Date</TableHead>
+                      <TableHead className="text-gray-400">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentRegistrations.map((reg) => (
+                      <TableRow key={reg._id} className="border-[#a56aff]/20 hover:bg-[#a56aff]/5">
+                        <TableCell className="font-medium text-white">
+                          {reg.userId ? reg.userId.fullName : <span className="text-red-500">Deleted User</span>}
+                        </TableCell>
+                        <TableCell className="text-gray-300">
+                          {reg.userId ? reg.userId.email : "-"}
+                        </TableCell>
+                        <TableCell className="text-white">
+                          {reg.eventId ? reg.eventId.title : <span className="text-red-500">Deleted Event</span>}
+                        </TableCell>
+                        <TableCell className="text-gray-300">
+                          {reg.eventId ? new Date(reg.eventId.startsAt).toLocaleDateString() : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="border-green-500 text-green-500">
+                            {reg.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
