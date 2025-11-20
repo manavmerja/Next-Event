@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { Calendar, Clock, MapPin, Users, Share2, Bookmark } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { ReviewsSection } from "@/components/reviews-section" // <-- 1. IMPORT THIS
 import { EventDetailSkeleton } from "@/components/loading-skeleton"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { CustomCursor } from "@/components/custom-cursor"
@@ -182,6 +183,10 @@ export default function EventDetailPage() {
                       <EventMap latitude={event.latitude} longitude={event.longitude} title={event.title} />
                     </CardContent>
                   </Card>
+                  
+                  {/* Reviews Section (NEW ADDITION) */}
+                  <ReviewsSection eventId={event._id} />
+                  
                 </div>
 
                 {/* Sidebar */}

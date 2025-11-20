@@ -57,6 +57,16 @@ export const eventsAPI = {
 
   // --- NEW FUNCTION ---
   toggleBookmark: (id: string) => apiRequest(`/events/${id}/bookmark`, { method: "POST" }),
+
+  // 1. Reviews Laao
+  getReviews: (id: string) => apiRequest(`/events/${id}/reviews`),
+
+  // 2. Naya Review Bhejo
+  addReview: (id: string, data: { rating: number; comment: string }) =>
+    apiRequest(`/events/${id}/reviews`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
   
 }
 

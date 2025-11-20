@@ -238,4 +238,62 @@ router.post("/:id/bookmark", authMiddleware, async (req: AuthRequest, res: Respo
   }
 })
 
-export default router
+// ... (Upar ka code waisa hi rahega)
+
+// --- 👇 NAYA CODE YAHAN SE SHURU ---
+
+// 1. GET Reviews: Kisi Event ke saare reviews laao
+router.get("/:id/reviews", async (req: Request, res: Response) => {
+  try {
+    // Dynamic Import (Taaki circular dependency na ho)
+    const Review = (await import("../models/Review")).default;
+    
+    const reviews = await Review.find({ eventId: req.params.id })
+      .populate("userId", "fullName email") // 🧠 JADOO: ID ko Naam mein badal do!
+      .sort({ createdAt: -1 }); // Sabse naya review sabse upar
+
+    res.json({ reviews });
+  } catch (error) {
+    console.error("Get reviews error:", error);
+    res.status(500).json({ error: "Server error fetching reviews" });
+  }
+});
+
+// 2. POST Review: Naya review add karo
+router.post("/:id/reviews", authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { rating, comment } = req.body;
+    const eventId = req.params.id;
+    const userId = req.user!.userId;
+
+    const Review = (await import("../models/Review")).default;
+
+    // Check karo: Kya is user ne pehle hi review de diya hai?
+    const existingReview = await Review.findOne({ userId, eventId });
+    if (existingReview) {
+      return res.status(400).json({ error: "You have already reviewed this event" });
+    }
+
+    // Naya review banao
+    const review = await Review.create({
+      userId,
+      eventId,
+      rating,
+      comment
+    });
+
+    // Jadoo: Abhi jo review banaya, usmein user ka naam bhi bhar do
+    // taaki frontend ko turant dikhayein
+    await review.populate("userId", "fullName");
+
+    res.status(201).json({ message: "Review added successfully", review });
+
+  } catch (error) {
+    console.error("Add review error:", error);
+    res.status(500).json({ error: "Server error adding review" });
+  }
+});
+
+// --- 👆 NAYA CODE KHATAM ---
+
+export default router; // Ye line file ke end mein honi chahiye
