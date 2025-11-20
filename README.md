@@ -6,8 +6,6 @@ A modern, full-stack event management and discovery platform built with Next.js 
 
 🔗 **Live Demo:** [https://v0-event-aggregator-web-app.vercel.app](https://v0-event-aggregator-web-app.vercel.app)
 
-![Project Banner](/public/placeholder.svg)
-
 ## ✨ Key Features
 
 ### 🌟 User Features
