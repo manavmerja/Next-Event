@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useAuth } from "@/lib/auth-context"
+import { authAPI } from "@/lib/api" // 1. Import API
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,7 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function SignupPage() {
   const router = useRouter()
-  const { signup } = useAuth()
+  const { login } = useAuth()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -27,18 +28,31 @@ export default function SignupPage() {
     phone: "",
   })
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      await signup(formData)
+      // 2. Call the API
+      const response = await authAPI.signup(formData)
+
+      // 3. Login user in Frontend Context
+      login(response.user)
+
       toast({
         title: "Account created!",
         description: "Welcome to Next Event.",
       })
+
+      // 4. Redirect to Dashboard
       router.push("/dashboard")
+
     } catch (error: any) {
+      console.error("Signup error:", error)
       toast({
         title: "Signup failed",
         description: error.message || "Could not create account",
@@ -50,7 +64,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#061823] via-black to-[#1C1DFF]/20 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#061823] via-black to-[#1C1DFF]/20 p-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -72,10 +86,9 @@ export default function SignupPage() {
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   id="fullName"
-                  type="text"
                   placeholder="John Doe"
                   value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  onChange={handleChange}
                   required
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
@@ -85,9 +98,9 @@ export default function SignupPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="student@nextevent.com"
+                  placeholder="student@university.edu"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={handleChange}
                   required
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
@@ -99,7 +112,7 @@ export default function SignupPage() {
                   type="password"
                   placeholder="••••••••"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={handleChange}
                   required
                   minLength={6}
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
@@ -109,10 +122,9 @@ export default function SignupPage() {
                 <Label htmlFor="studentId">Student ID</Label>
                 <Input
                   id="studentId"
-                  type="text"
-                  placeholder="STU001"
+                  placeholder="STU12345"
                   value={formData.studentId}
-                  onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                  onChange={handleChange}
                   required
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
@@ -121,10 +133,9 @@ export default function SignupPage() {
                 <Label htmlFor="department">Department</Label>
                 <Input
                   id="department"
-                  type="text"
                   placeholder="Computer Science"
                   value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  onChange={handleChange}
                   required
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
@@ -133,10 +144,9 @@ export default function SignupPage() {
                 <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
-                  type="tel"
-                  placeholder="+1234567890"
+                  placeholder="+1 234 567 8900"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={handleChange}
                   required
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
@@ -144,7 +154,7 @@ export default function SignupPage() {
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full bg-[#a56aff] hover:bg-[#a56aff]/90 text-white" disabled={loading}>
-                {loading ? "Creating account..." : "Sign Up"}
+                {loading ? "Creating Account..." : "Sign Up"}
               </Button>
               <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{" "}
