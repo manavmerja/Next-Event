@@ -33,6 +33,14 @@ export const authAPI = {
     }),
   logout: () => apiRequest("/auth/logout", { method: "POST" }),
   getMe: () => apiRequest("/auth/me"),
+
+  // --- NEW FUNCTION ---
+  loginWithGitHub: (code: string) => 
+    apiRequest("/auth/github", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }),
+    
 }
 
 export const eventsAPI = {

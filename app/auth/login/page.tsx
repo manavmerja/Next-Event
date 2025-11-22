@@ -7,12 +7,13 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useAuth } from "@/lib/auth-context"
-import { authAPI } from "@/lib/api" // 1. IMPORT authAPI
+import { authAPI } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { Github } from "lucide-react" // 1. Import Github Icon
 
 export default function LoginPage() {
   const router = useRouter()
@@ -29,10 +30,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // 2. Call the API to authenticate
       const response = await authAPI.login(formData)
-      
-      // 3. Update the Global State with the user data
       login(response.user)
 
       toast({
@@ -40,7 +38,6 @@ export default function LoginPage() {
         description: "You have successfully logged in.",
       })
 
-      // 4. SMART REDIRECT LOGIC
       if (response.user.role === "admin") {
         router.push("/admin/dashboard")
       } else {
@@ -57,6 +54,24 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 2. GitHub Login Logic
+  const handleGitHubLogin = () => {
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID
+    
+    if (!clientId) {
+      toast({
+        title: "Configuration Error",
+        description: "GitHub Client ID is missing",
+        variant: "destructive"
+      })
+      return
+    }
+
+    const redirectUri = `${window.location.origin}/auth/github/callback`
+    // Redirect user to GitHub
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=read:user user:email`
   }
 
   return (
@@ -107,6 +122,28 @@ export default function LoginPage() {
               <Button type="submit" className="w-full bg-[#a56aff] hover:bg-[#a56aff]/90 text-white" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
+
+              {/* 3. GitHub Login Button (Highlighted) */}
+              <div className="relative w-full">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-800" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-black/50 px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full border-[#00F0FF] text-[#00F0FF] hover:bg-[#00F0FF]/10 hover:text-[#00F0FF] hover:border-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.15)] transition-all duration-300 font-semibold"
+                onClick={handleGitHubLogin}
+              >
+                <Github className="mr-2 h-5 w-5" />
+                Sign in with GitHub
+              </Button>
+              {/* ------------------------------------ */}
+
               <p className="text-sm text-center text-muted-foreground">
                 Don't have an account?{" "}
                 <Link href="/auth/signup" className="text-[#a56aff] hover:underline">
