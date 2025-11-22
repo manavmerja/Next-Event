@@ -37,6 +37,9 @@ export default function CreateEventPage() {
     latitude: "",
     longitude: "",
     bannerUrl: "",
+    // --- NEW FIELDS ---
+    rules: "",
+    requirements: "",
   })
 
   useEffect(() => {
@@ -57,7 +60,7 @@ export default function CreateEventPage() {
     try {
       const eventData = {
         ...formData,
-        // 1. Make Lat/Lng optional (Default to 0 if empty)
+        // Make Lat/Lng optional (Default to 0 if empty)
         latitude: formData.latitude ? Number.parseFloat(formData.latitude) : 0,
         longitude: formData.longitude ? Number.parseFloat(formData.longitude) : 0,
       }
@@ -129,6 +132,32 @@ export default function CreateEventPage() {
                       />
                     </div>
 
+                    {/* --- NEW FIELDS START --- */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rules">Rules & Regulations</Label>
+                      <Textarea
+                        id="rules"
+                        placeholder="e.g. 1. Bring your college ID. 2. No outside food allowed."
+                        value={formData.rules}
+                        onChange={(e) => setFormData({ ...formData, rules: e.target.value })}
+                        rows={3}
+                        className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="requirements">Prerequisites / Precautions</Label>
+                      <Textarea
+                        id="requirements"
+                        placeholder="e.g. Laptop with VS Code installed, Water bottle."
+                        value={formData.requirements}
+                        onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                        rows={3}
+                        className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
+                      />
+                    </div>
+                    {/* --- NEW FIELDS END --- */}
+
                     {/* Category */}
                     <div className="space-y-2">
                       <Label htmlFor="category">Category *</Label>
@@ -159,7 +188,6 @@ export default function CreateEventPage() {
                           value={formData.startsAt}
                           onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
                           required
-                          // 2. Added 'dark:[color-scheme:dark]' to fix icon visibility
                           className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff] dark:[color-scheme:dark]"
                         />
                       </div>
@@ -170,7 +198,6 @@ export default function CreateEventPage() {
                           type="datetime-local"
                           value={formData.endsAt}
                           onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
-                          // 2. Added 'dark:[color-scheme:dark]' to fix icon visibility
                           className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff] dark:[color-scheme:dark]"
                         />
                       </div>
@@ -203,7 +230,7 @@ export default function CreateEventPage() {
                       />
                     </div>
 
-                    {/* Coordinates (Now Optional) */}
+                    {/* Coordinates (Optional) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="latitude">Latitude (Optional)</Label>
@@ -214,7 +241,6 @@ export default function CreateEventPage() {
                           placeholder="40.7128"
                           value={formData.latitude}
                           onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                          // 3. Removed 'required'
                           className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                         />
                       </div>
@@ -227,7 +253,6 @@ export default function CreateEventPage() {
                           placeholder="-74.0060"
                           value={formData.longitude}
                           onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                          // 3. Removed 'required'
                           className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                         />
                       </div>

@@ -11,6 +11,8 @@ export interface IEvent extends Document {
   latitude: number
   longitude: number
   bannerUrl: string
+  rules?: string
+  requirements?: string
   createdBy: mongoose.Types.ObjectId
   createdAt: Date
 }
@@ -59,6 +61,11 @@ const EventSchema = new Schema<IEvent>({
     type: String,
     required: true,
   },
+
+  // --- 👇 NEW FIELDS ADDED HERE 👇 ---
+  rules: { type: String, default: "" },        // Niyam
+  requirements: { type: String, default: "" }, // Precautions/Requirements
+  // -----------------------------------
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: "User",

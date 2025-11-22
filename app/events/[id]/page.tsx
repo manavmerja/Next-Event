@@ -4,10 +4,10 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { Calendar, Clock, MapPin, Users, Share2, Bookmark } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, Share2, Bookmark, AlertTriangle, CheckCircle2 } from "lucide-react" // Added icons
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { ReviewsSection } from "@/components/reviews-section" // <-- 1. IMPORT THIS
+import { ReviewsSection } from "@/components/reviews-section"
 import { EventDetailSkeleton } from "@/components/loading-skeleton"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { CustomCursor } from "@/components/custom-cursor"
@@ -177,6 +177,28 @@ export default function EventDetailPage() {
                     <p className="text-muted-foreground text-lg leading-relaxed">{event.description}</p>
                   </div>
 
+                  {/* --- RULES & REQUIREMENTS SECTIONS (NEW) --- */}
+                  {event.rules && (
+                    <div className="p-6 rounded-xl bg-red-900/10 border border-red-500/20 backdrop-blur-sm">
+                      <h3 className="text-xl font-semibold text-red-400 mb-3 flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5" />
+                        Rules & Regulations
+                      </h3>
+                      <p className="text-gray-300 whitespace-pre-line leading-relaxed">{event.rules}</p>
+                    </div>
+                  )}
+
+                  {event.requirements && (
+                    <div className="p-6 rounded-xl bg-blue-900/10 border border-blue-500/20 backdrop-blur-sm">
+                      <h3 className="text-xl font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5" />
+                        Prerequisites & Requirements
+                      </h3>
+                      <p className="text-gray-300 whitespace-pre-line leading-relaxed">{event.requirements}</p>
+                    </div>
+                  )}
+                  {/* ------------------------------------------- */}
+
                   {/* Map */}
                   <Card className="border-[#a56aff]/20 bg-black/50 backdrop-blur-sm overflow-hidden">
                     <CardContent className="p-0">
@@ -184,7 +206,7 @@ export default function EventDetailPage() {
                     </CardContent>
                   </Card>
                   
-                  {/* Reviews Section (NEW ADDITION) */}
+                  {/* Reviews Section */}
                   <ReviewsSection eventId={event._id} />
                   
                 </div>

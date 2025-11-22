@@ -85,6 +85,11 @@ router.post(
     body("latitude").isFloat().withMessage("Valid latitude is required"),
     body("longitude").isFloat().withMessage("Valid longitude is required"),
     body("bannerUrl").trim().notEmpty().withMessage("Banner URL is required"),
+    
+    // --- NEW FIELDS VALIDATION ---
+    body("rules").optional().isString(),
+    body("requirements").optional().isString(),
+    // -----------------------------
   ],
   async (req: AuthRequest, res: Response) => {
     const errors = validationResult(req)
@@ -197,7 +202,6 @@ router.delete("/:id/register", authMiddleware, async (req: AuthRequest, res: Res
   }
 })
 
-// --- NEW BOOKMARK ROUTE ---
 // POST /api/events/:id/bookmark - Toggle bookmark status
 router.post("/:id/bookmark", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -238,19 +242,17 @@ router.post("/:id/bookmark", authMiddleware, async (req: AuthRequest, res: Respo
   }
 })
 
-// ... (Upar ka code waisa hi rahega)
+// --- REVIEWS ROUTES ---
 
-// --- 👇 NAYA CODE YAHAN SE SHURU ---
-
-// 1. GET Reviews: Kisi Event ke saare reviews laao
+// GET /api/events/:id/reviews - Get reviews for an event
 router.get("/:id/reviews", async (req: Request, res: Response) => {
   try {
-    // Dynamic Import (Taaki circular dependency na ho)
+    // Dynamic Import
     const Review = (await import("../models/Review")).default;
     
     const reviews = await Review.find({ eventId: req.params.id })
-      .populate("userId", "fullName email") // 🧠 JADOO: ID ko Naam mein badal do!
-      .sort({ createdAt: -1 }); // Sabse naya review sabse upar
+      .populate("userId", "fullName email")
+      .sort({ createdAt: -1 });
 
     res.json({ reviews });
   } catch (error) {
@@ -259,7 +261,7 @@ router.get("/:id/reviews", async (req: Request, res: Response) => {
   }
 });
 
-// 2. POST Review: Naya review add karo
+// POST /api/events/:id/reviews - Add a review
 router.post("/:id/reviews", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { rating, comment } = req.body;
@@ -268,13 +270,11 @@ router.post("/:id/reviews", authMiddleware, async (req: AuthRequest, res: Respon
 
     const Review = (await import("../models/Review")).default;
 
-    // Check karo: Kya is user ne pehle hi review de diya hai?
     const existingReview = await Review.findOne({ userId, eventId });
     if (existingReview) {
       return res.status(400).json({ error: "You have already reviewed this event" });
     }
 
-    // Naya review banao
     const review = await Review.create({
       userId,
       eventId,
@@ -282,8 +282,6 @@ router.post("/:id/reviews", authMiddleware, async (req: AuthRequest, res: Respon
       comment
     });
 
-    // Jadoo: Abhi jo review banaya, usmein user ka naam bhi bhar do
-    // taaki frontend ko turant dikhayein
     await review.populate("userId", "fullName");
 
     res.status(201).json({ message: "Review added successfully", review });
@@ -294,6 +292,4 @@ router.post("/:id/reviews", authMiddleware, async (req: AuthRequest, res: Respon
   }
 });
 
-// --- 👆 NAYA CODE KHATAM ---
-
-export default router; // Ye line file ke end mein honi chahiye
+export default router
