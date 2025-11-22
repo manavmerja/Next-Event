@@ -178,4 +178,109 @@ router.get("/me", async (req: Request, res: Response) => { // Yahaan bhi add kar
   }
 })
 
+
+// --- GITHUB OAUTH LOGIN ---
+router.post("/github", async (req: Request, res: Response) => {
+  const { code } = req.body
+  
+  // Secrets from .env
+  const CLIENT_ID = process.env.GITHUB_CLIENT_ID
+  const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+
+  try {
+    // 1. Exchange Code for Access Token
+    const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        code,
+      }),
+    })
+
+    const tokenData = (await tokenResponse.json()) as any
+    
+    if (tokenData.error) {
+      return res.status(400).json({ error: tokenData.error_description || "GitHub login failed" })
+    }
+
+    const accessToken = tokenData.access_token
+
+    // 2. Fetch User Data from GitHub
+    const userResponse = await fetch("https://api.github.com/user", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    const gitHubUser = (await userResponse.json()) as any
+
+    // 3. Fetch Email (agar public profile par email hidden hai)
+    let email = gitHubUser.email
+    if (!email) {
+      const emailsResponse = await fetch("https://api.github.com/user/emails", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      const emails = (await emailsResponse.json()) as any
+      const primaryEmail = emails.find((e: any) => e.primary && e.verified)
+      if (primaryEmail) email = primaryEmail.email
+    }
+
+    if (!email) {
+      return res.status(400).json({ error: "No verifiable email found from GitHub" })
+    }
+
+    // 4. Find or Create User in DB
+    let user = await User.findOne({ email })
+
+    if (!user) {
+      // User nahi hai -> Naya banao (Placeholders ke saath)
+      user = await User.create({
+        fullName: gitHubUser.name || gitHubUser.login,
+        email: email,
+        passwordHash: "github-oauth-linked-account", // Dummy password (login wont work with pass)
+        studentId: `GH-${gitHubUser.id}`, // Placeholder ID
+        department: "General",
+        phone: "Not Provided",
+        role: "student",
+        bookmarks: [],
+      })
+    }
+
+    // 5. Generate JWT Token
+    const token = generateToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    })
+
+    // 6. Set Secure Cookie (Same as normal login)
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+
+    // 7. Send Success Response
+    res.json({
+      message: "GitHub login successful",
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        bookmarks: user.bookmarks,
+      },
+    })
+
+  } catch (error) {
+    console.error("GitHub Auth Error:", error)
+    res.status(500).json({ error: "Server error during GitHub login" })
+  }
+})
+
+
 export default router
