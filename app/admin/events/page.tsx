@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { eventsAPI } from "@/lib/api"
+import { eventsAPI, adminAPI } from "@/lib/api" // <-- IMPORT adminAPI
 import { useToast } from "@/hooks/use-toast"
 
 export default function ManageEventsPage() {
@@ -26,7 +26,7 @@ export default function ManageEventsPage() {
       setEvents(data.events)
     } catch (error) {
       console.error("Failed to fetch events:", error)
-      toast({ title: "Error", description: "Failed to load events" })
+      toast({ title: "Error", description: "Failed to load events", variant: "destructive" })
     } finally {
       setLoading(false)
     }
@@ -41,32 +41,22 @@ export default function ManageEventsPage() {
       toast({ title: "Success", description: "Event deleted successfully" })
     } catch (error) {
       console.error("Failed to delete event:", error)
-      toast({ title: "Error", description: "Failed to delete event" })
+      toast({ title: "Error", description: "Failed to delete event", variant: "destructive" })
     }
   }
 
-  const handleExportCSV = () => {
-    const csv = [
-      ["Event Title", "Category", "Starts At", "Venue", "Registrants"],
-      ...events.map((e) => [
-        e.title,
-        e.category,
-        new Date(e.startsAt).toLocaleString(),
-        e.venue,
-        e.registrations?.length || 0,
-      ]),
-    ]
-      .map((row) => row.map((cell) => `"${cell}"`).join(","))
-      .join("\n")
-
-    const blob = new Blob([csv], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "events.csv"
-    a.click()
-    window.URL.revokeObjectURL(url)
+  // --- UPDATED EXPORT FUNCTION ---
+  const handleExport = async () => {
+    try {
+      toast({ title: "Downloading...", description: "Generating CSV file" })
+      await adminAPI.downloadCSV()
+      toast({ title: "Success", description: "Download started" })
+    } catch (error) {
+      console.error("Export failed:", error)
+      toast({ title: "Error", description: "Failed to download CSV", variant: "destructive" })
+    }
   }
+  // -------------------------------
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
@@ -77,14 +67,17 @@ export default function ManageEventsPage() {
           <p className="text-gray-400">View and manage all events in the system</p>
         </div>
         <div className="flex gap-3">
+          {/* --- UPDATED BUTTON --- */}
           <Button
             variant="outline"
-            className="border-[#a56aff]/30 hover:bg-[#a56aff]/10 bg-transparent"
-            onClick={handleExportCSV}
+            className="border-[#00F0FF]/30 text-[#00F0FF] hover:bg-[#00F0FF]/10"
+            onClick={handleExport}
           >
             <Download className="h-4 w-4 mr-2" />
-            Export to CSV
+            Export Registrations to CSV
           </Button>
+          {/* ------------------------ */}
+          
           <Button className="bg-[#a56aff] hover:bg-[#a56aff]/90 text-white" asChild>
             <Link href="/events/new">
               <Plus className="h-4 w-4 mr-2" />

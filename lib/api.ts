@@ -88,6 +88,31 @@ export const adminAPI = {
   getAllUsers: () => apiRequest("/users"),
 
   getAllRegistrations: () => apiRequest("/admin/registrations"),
+
+  // --- NEW FUNCTION ---
+  // Note: Hum yahan 'fetch' direct use karenge kyunki humein JSON nahi, Blob (file) chahiye
+  downloadCSV: async () => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/export`, {
+      method: "GET",
+      headers: {
+        // Auth cookie automatically jaayega agar 'credentials: include' ho
+      },
+      // Credentials zaroori hai taaki cookie saath jaaye
+      credentials: "include" 
+    })
+    
+    if (!response.ok) throw new Error("Export failed")
+    
+    // File download logic
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `registrations-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+  },
   
   updateUserRole: (userId: string, newRole: string) =>
     apiRequest(`/users/${userId}`, {
