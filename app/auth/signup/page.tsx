@@ -7,12 +7,13 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useAuth } from "@/lib/auth-context"
-import { authAPI } from "@/lib/api" // 1. Import API
+import { authAPI } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { Github } from "lucide-react" // 1. Import Github Icon
 
 export default function SignupPage() {
   const router = useRouter()
@@ -37,10 +38,7 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      // 2. Call the API
       const response = await authAPI.signup(formData)
-
-      // 3. Login user in Frontend Context
       login(response.user)
 
       toast({
@@ -48,9 +46,8 @@ export default function SignupPage() {
         description: "Welcome to Next Event.",
       })
 
-      // 4. Redirect to Dashboard
       router.push("/dashboard")
-
+      
     } catch (error: any) {
       console.error("Signup error:", error)
       toast({
@@ -61,6 +58,23 @@ export default function SignupPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 2. GitHub Login Logic (Same as Login Page)
+  const handleGitHubLogin = () => {
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID
+    
+    if (!clientId) {
+      toast({
+        title: "Configuration Error",
+        description: "GitHub Client ID is missing",
+        variant: "destructive"
+      })
+      return
+    }
+
+    const redirectUri = `${window.location.origin}/auth/github/callback`
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=read:user user:email`
   }
 
   return (
@@ -82,6 +96,7 @@ export default function SignupPage() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              {/* Full Name */}
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
@@ -93,6 +108,7 @@ export default function SignupPage() {
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
               </div>
+              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -105,6 +121,7 @@ export default function SignupPage() {
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
               </div>
+              {/* Password */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -118,6 +135,7 @@ export default function SignupPage() {
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
               </div>
+              {/* Student ID */}
               <div className="space-y-2">
                 <Label htmlFor="studentId">Student ID</Label>
                 <Input
@@ -129,6 +147,7 @@ export default function SignupPage() {
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
               </div>
+              {/* Department */}
               <div className="space-y-2">
                 <Label htmlFor="department">Department</Label>
                 <Input
@@ -140,6 +159,7 @@ export default function SignupPage() {
                   className="bg-black/30 border-[#a56aff]/30 focus:border-[#a56aff]"
                 />
               </div>
+              {/* Phone */}
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
                 <Input
@@ -152,10 +172,33 @@ export default function SignupPage() {
                 />
               </div>
             </CardContent>
+            
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full bg-[#a56aff] hover:bg-[#a56aff]/90 text-white" disabled={loading}>
                 {loading ? "Creating Account..." : "Sign Up"}
               </Button>
+
+              {/* 3. GitHub Sign Up Button */}
+              <div className="relative w-full">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-800" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-black/50 px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full border-[#00F0FF] text-[#00F0FF] hover:bg-[#00F0FF]/10 hover:text-[#00F0FF] hover:border-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.15)] transition-all duration-300 font-semibold"
+                onClick={handleGitHubLogin}
+              >
+                <Github className="mr-2 h-5 w-5" />
+                Sign up with GitHub
+              </Button>
+              {/* ------------------------------------ */}
+
               <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{" "}
                 <Link href="/auth/login" className="text-[#a56aff] hover:underline">
