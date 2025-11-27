@@ -170,4 +170,27 @@ next-event/
 │   ├── routes/           # 🛣️ API Routes
 │   └── index.ts          # 🏁 Server Entry Point
 └── public/               # 🖼️ Static Assets
-📡 API EndpointsMethodEndpointDescriptionAccessAuthPOST/api/auth/loginAuthenticate user & set cookiePublicPOST/api/auth/signupRegister a new accountPublicGET/api/auth/meRetrieve current session infoPrivateEventsGET/api/eventsFetch all events (supports filtering)PublicPOST/api/eventsCreate a new eventAdminPOST/api/events/:id/bookmarkToggle event wishlist statusPrivateReviewsPOST/api/events/:id/reviewsSubmit a rating/reviewPrivateGET/api/events/:id/reviewsFetch event reviewsPublic🤝 ContributingContributions make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.Fork the ProjectCreate your Feature Branch (git checkout -b feature/AmazingFeature)Commit your Changes (git commit -m 'Add some AmazingFeature')Push to the Branch (git push origin feature/AmazingFeature)Open a Pull Request📜 LicenseDistributed under the MIT License. See LICENSE for more information.📞 ContactManav MerjaProject Link: https://github.com/manavmerja/Next-Event<div align="center"><br /><i>Built with ❤️, TypeScript, and lots of coffee ☕</i></div>
+
+
+🤝 Contributing
+Contributions make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
+
+Fork the Project
+
+Create your Feature Branch (git checkout -b feature/AmazingFeature)
+
+Commit your Changes (git commit -m 'Add some AmazingFeature')
+
+Push to the Branch (git push origin feature/AmazingFeature)
+
+Open a Pull Request
+
+📜 License
+Distributed under the MIT License. See LICENSE for more information.
+
+📞 Contact
+Manav Merja
+
+Project Link: https://github.com/manavmerja/Next-Event
+
+<div align="center"> <br /> <i>Built with ❤️, TypeScript, and lots of coffee ☕</i> </div>
