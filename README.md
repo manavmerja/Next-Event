@@ -1,180 +1,176 @@
 <div align="center">
 
-  <h1>🚀 Next Event</h1>
-
-  <h3>The Ultimate Event Aggregator & Discovery Platform</h3>
-
-  <p>
-    A modern, full-stack event management system built for the community. <br />
-    Features a cyberpunk aesthetic, robust admin tools, and seamless event discovery.
-  </p>
-
-  <p>
-    <a href="https://v0-event-aggregator-web-app.vercel.app"><strong>View Live Demo »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/manavmerja/Next-Event/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/manavmerja/Next-Event/pulls">Request Feature</a>
-  </p>
-
-  <p>
-    <img src="https://img.shields.io/github/license/manavmerja/Next-Event?style=for-the-badge&color=blue" alt="License" />
-    <img src="https://img.shields.io/github/last-commit/manavmerja/Next-Event?style=for-the-badge" alt="Last Commit" />
-    <img src="https://img.shields.io/github/stars/manavmerja/Next-Event?style=for-the-badge&color=yellow" alt="Stars" />
-    <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" alt="Status" />
-  </p>
+  <br />
+  <img src="https://media.giphy.com/media/qgQUggAC3Pfv687qPC/giphy.gif" alt="Next Event Logo" width="100">
   
-  <p>
-    <img src="https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
-    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
-    <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
-    <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" alt="Express" />
+  <br />
+
+  <h1 align="center">🚀 Next Event</h1>
+
+  <h3 align="center">The Ultimate Cyberpunk Event Discovery Platform</h3>
+
+  <p align="center">
+    Built for the <strong>GitHub Developer Program</strong>. Powered by Next.js 15 & MERN.
+    <br />
+    <a href="https://v0-event-aggregator-web-app.vercel.app"><strong>⚡ View Live Demo</strong></a>
+    ·
+    <a href="https://github.com/manavmerja/Next-Event/issues">🐛 Report Bug</a>
+    ·
+    <a href="https://github.com/manavmerja/Next-Event/pulls">✨ Request Feature</a>
+  </p>
+
+  <p align="center">
+    <a href="https://skillicons.dev">
+      <img src="https://skillicons.dev/icons?i=nextjs,ts,tailwind,mongodb,express,nodejs,vercel,githubactions,figma&theme=dark" />
+    </a>
+  </p>
+
+  <p align="center">
+    <img src="https://img.shields.io/github/license/manavmerja/Next-Event?style=flat-square&color=00F0FF" alt="License" />
+    <img src="https://img.shields.io/github/last-commit/manavmerja/Next-Event?style=flat-square&color=a56aff" alt="Last Commit" />
+    <img src="https://img.shields.io/github/stars/manavmerja/Next-Event?style=flat-square&color=yellow" alt="Stars" />
+    <img src="https://img.shields.io/badge/Maintained%3F-yes-success.svg?style=flat-square" alt="Maintenance" />
   </p>
 </div>
 
-<br />
+---
 
 ---
 
+## 📸 Project Screenshots
+
+> A glimpse into the Cyberpunk UI and functionality.
+
+| **🏠 Home & Landing Page** | **🔍 Explore & Filter Events** |
+|:---:|:---:|
+| ![Home Page](public/home.png) | ![Explore Events](public/explore.png) |
+| *Immersive Hero section with Neon aesthetics* | *Advanced search with Category & Date filters* |
+
+<br />
+
+| **🎫 Event Card & Details** | **🛡️ Admin Dashboard** |
+|:---:|:---:|
+| ![Event Details](public/event-card.png) | ![Admin Dashboard](public/admin.png) |
+| *Detailed view with Maps, Schedule & Wishlist* | *Real-time analytics and Event management* |
+
+---
 ## 📖 Table of Contents
 
 - [About the Project](#-about-the-project)
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
 - [Project Structure](#-project-structure)
 - [API Documentation](#-api-endpoints)
 - [Contributing](#-contributing)
-- [License](#-license)
 - [Contact](#-contact)
 
 ---
 
 ## 🌟 About the Project
 
-**Next Event** is part of the **GitHub Developer Program**. It is a comprehensive Full-Stack MERN application designed to bridge the gap between event organizers and attendees.
+**Next Event** bridges the gap between event organizers and attendees with a **Cyberpunk-inspired UI**. Unlike traditional boring lists, Next Event uses neon aesthetics, fluid animations, and a "Dark-First" approach to make event discovery exciting.
 
-Built with performance and aesthetics in mind, it leverages the power of **Next.js 15** for a lightning-fast frontend and **Express/MongoDB** for a scalable backend. The design language follows a "Dark-First" Cyberpunk theme, utilizing neon accents to create an immersive user experience.
+It leverages **Next.js 15 (App Router)** for SEO and speed, backed by a robust **Express/MongoDB** architecture.
+
+### Why this project?
+* 🚀 **Speed:** Optimized with Server Components.
+* 👁️ **Visuals:** Uses Framer Motion for high-end feel.
+* 🔐 **Security:** HttpOnly Cookies & JWT implementation.
 
 ---
 
 ## ✨ Key Features
 
 ### 🚀 **User Experience**
-* **Intelligent Discovery:** Advanced filtering by category (Hackathons, Workshops, Sports) and real-time keyword search.
-* **Rich Event Data:** Integrated Leaflet maps for location, detailed schedules, and organizer profiles.
-* **Interactive Wishlist:** Bookmark events instantly with a custom Neon Cyan Glow effect ❤️.
-* **Community Review System:** 5-star rating system with text feedback capabilities.
-* **Personalized Dashboard:** Track registered events and view participation history in one place.
-* **Secure Authentication:** JWT-based stateless authentication using secure, `httpOnly` cookies with `SameSite` support.
+- 🔍 **Intelligent Discovery:** Real-time search with categories (Hackathons, Sports, Music).
+- 🗺️ **Rich Data:** Integrated Leaflet maps & detailed schedules.
+- ❤️ **Interactive Wishlist:** Neon Cyan Glow effect on bookmarking.
+- ⭐ **Reviews:** 5-star rating system with feedback.
+- 👤 **Dashboard:** Track registered events & history.
+- 🔐 **Secure Auth:** JWT via httpOnly cookies (SameSite support).
 
-### 🛡️ **Administrative Control**
-* **Visual Analytics:** Dashboard displaying registered user count, total events, and active registrations.
-* **CRUD Management:** Complete control to Create, Edit, and Delete events.
-* **User Role Management:** Promote Students to Admins or manage account access.
-* **Registration Tracking:** Detailed logs of attendees for every specific event.
+### 🛡️ **Admin Powers**
+- 📊 **Visual Analytics:** Graphs for total users, events, and registrations.
+- 📝 **CRUD Management:** Create, Edit, Delete events seamlessly.
+- 👥 **User Control:** Manage roles (Student ↔ Admin).
+- 📋 **Registration Logs:** Export attendee lists.
 
-### 🎨 **UI/UX Design**
-* **Cyberpunk Aesthetic:** A deep dark theme accented with **Neon Cyan (#00F0FF)** and **Purple (#a56aff)**.
-* **Fluid Motion:** Powered by **Framer Motion** for seamless page transitions and micro-interactions.
-* **Responsive:** Grid systems optimized for Mobile, Tablet, and Desktop viewports.
-* **Live GitHub Stats:** Integrated widget fetching real-time repository data.
+### 🎨 **UI/UX Magic**
+- **Theme:** Cyberpunk Dark (`#0a0a0a`) with **Neon Cyan (`#00F0FF`)** accents.
+- **Animations:** Page transitions powered by **Framer Motion**.
+- **Responsive:** Mobile-first grid layout.
 
 ---
 
 ## 🛠 Tech Stack
 
-| Domain | Technologies Used |
+| Domain | Technologies |
 | :--- | :--- |
-| **Frontend** | ![Next.js](https://img.shields.io/badge/Next.js_15-black?logo=next.js) ![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript) ![Tailwind](https://img.shields.io/badge/Tailwind_v4-teal?logo=tailwind-css) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-purple?logo=framer) ![Shadcn](https://img.shields.io/badge/ShadCN-black?logo=shadcnui) |
-| **Backend** | ![Node.js](https://img.shields.io/badge/Node.js-green?logo=node.js) ![Express](https://img.shields.io/badge/Express.js-gray?logo=express) |
-| **Database** | ![MongoDB](https://img.shields.io/badge/MongoDB_Atlas-green?logo=mongodb) ![Mongoose](https://img.shields.io/badge/Mongoose-red?logo=mongoose) |
-| **Security** | ![JWT](https://img.shields.io/badge/JWT-token-pink?logo=jsonwebtokens) ![Bcrypt](https://img.shields.io/badge/Bcrypt-hash-orange) |
-| **DevOps** | ![Vercel](https://img.shields.io/badge/Vercel-black?logo=vercel) ![Render](https://img.shields.io/badge/Render-cloud?logo=render) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-blue?logo=githubactions) |
+| **Frontend** | `Next.js 15` `TypeScript` `Tailwind CSS v4` `Framer Motion` `Lucide Icons` |
+| **Backend** | `Node.js` `Express.js` `REST API` |
+| **Database** | `MongoDB Atlas` `Mongoose ODM` |
+| **Auth** | `JWT` `Bcrypt` `HttpOnly Cookies` |
+| **DevOps** | `Vercel` `Render` `GitHub Actions` |
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these steps to set up the project locally.
-
-### Prerequisites
-* **Node.js** (v18 or higher)
-* **npm** or **pnpm**
-* A **MongoDB Atlas** account (or local MongoDB instance)
-
-### Installation
-
-1.  **Clone the repository**
-    ```bash
-    git clone [https://github.com/manavmerja/Next-Event.git](https://github.com/manavmerja/Next-Event.git)
-    cd next-event
-    ```
-
-2.  **Install dependencies**
-    ```bash
-    pnpm install
-    # or
-    npm install
-    ```
-
-3.  **Configure Environment Variables**
-    Create a `.env` file in the root directory and add the following:
-    ```env
-    # Database
-    MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/next-event
-
-    # Security
-    JWT_SECRET=your_super_secret_complex_key
-
-    # API Configuration
-    NEXT_PUBLIC_API_URL=http://localhost:3001/api
-    
-    # Environment
-    NODE_ENV=development
-    ```
-
-4.  **Seed the Database (Optional)**
-    Populate your database with dummy data (1 Admin, 1 Student, 6 Events).
-    ```bash
-    pnpm run seed
-    ```
-
-5.  **Run the Application**
-    Start both the Next.js frontend and Express backend concurrently.
-    ```bash
-    pnpm run dev
-    ```
-    - **Frontend:** `http://localhost:3000`
-    - **Backend:** `http://localhost:3001`
-
----
-
-## 📂 Project Structure
-
+### 1. Clone the repository
 ```bash
-next-event/
-├── app/                  # Next.js App Router (Frontend)
-│   ├── admin/            # 🔐 Protected Admin Routes
-│   ├── auth/             # 🔐 Login & Signup
-│   ├── events/           # 🌍 Public Event Pages
-│   └── dashboard/        # 👤 User Dashboard
-├── components/           # 🧩 Reusable UI Components
-├── lib/                  # 🛠️ Utilities & Auth Context
-├── server/               # ⚙️ Express Backend
-│   ├── models/           # 🗄️ Mongoose Schemas
-│   ├── routes/           # 🛣️ API Routes
-│   └── index.ts          # 🏁 Server Entry Point
-└── public/               # 🖼️ Static Assets
+git clone [https://github.com/manavmerja/Next-Event.git](https://github.com/manavmerja/Next-Event.git)
+cd next-event
+2. Install dependencies
+Bash
 
+# Frontend & Backend dependencies
+pnpm install
+3. Environment Setup
+Create a .env file in the root directory:
+
+Code snippet
+
+MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/next-event
+JWT_SECRET=your_super_secret_key
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NODE_ENV=development
+4. Run the App
+Bash
+
+# Runs both Frontend (3000) & Backend (3001)
+pnpm run dev
+📂 Project Structure
+Bash
+
+next-event/
+├── app/                  # Next.js 15 App Router
+│   ├── (auth)/           # Login & Register Groups
+│   ├── (dashboard)/      # Protected User/Admin Routes
+│   └── events/           # Public Event Listings
+├── components/           # ShadCN & Custom Components
+├── server/               # Express Backend Logic
+│   ├── controllers/      # Business Logic
+│   ├── models/           # DB Schemas
+│   └── routes/           # API Endpoints
+└── public/               # Static Assets
+
+## 📡 API Endpoints
+
+<details>
+<summary>👇 Click to expand API Details</summary>
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/login` | 🟢 Public | Authenticate user & set cookie |
+| `POST` | `/api/auth/signup` | 🟢 Public | Register a new account |
+| `GET` | `/api/events` | 🟢 Public | Fetch all events (supports filtering) |
+| `POST` | `/api/events` | 🔴 Admin | Create a new event |
+| `POST` | `/api/reviews/:id` | 🟡 Private | Submit a rating/review |
+
+</details>
 
 🤝 Contributing
-Contributions make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
-
 Fork the Project
 
 Create your Feature Branch (git checkout -b feature/AmazingFeature)
@@ -185,12 +181,7 @@ Push to the Branch (git push origin feature/AmazingFeature)
 
 Open a Pull Request
 
-📜 License
-Distributed under the MIT License. See LICENSE for more information.
-
 📞 Contact
 Manav Merja
 
-Project Link: https://github.com/manavmerja/Next-Event
-
-<div align="center"> <br /> <i>Built with ❤️, TypeScript, and lots of coffee ☕</i> </div>
+<div align="center"> <i>Built with ❤️, TypeScript, and lots of ☕ Chaai</i> </div>
