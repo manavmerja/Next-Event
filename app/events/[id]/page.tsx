@@ -4,7 +4,18 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { Calendar, Clock, MapPin, Users, Share2, Bookmark, AlertTriangle, CheckCircle2 } from "lucide-react" // Added icons
+import { 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Users, 
+  Share2, 
+  Bookmark, 
+  AlertTriangle, 
+  CheckCircle2, 
+  ExternalLink // 👈 Import ExternalLink
+} from "lucide-react"
+
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ReviewsSection } from "@/components/reviews-section"
@@ -14,6 +25,10 @@ import { CustomCursor } from "@/components/custom-cursor"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+// 👇 New Imports for Dialog & Input
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+// ------------------------------
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { eventsAPI } from "@/lib/api"
@@ -26,10 +41,13 @@ export default function EventDetailPage() {
   const router = useRouter()
   const { user } = useAuth()
   const { toast } = useToast()
+  
   const [event, setEvent] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState(false)
   const [isRegistered, setIsRegistered] = useState(false)
+  // 👇 New State for Dialog
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false)
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -61,6 +79,7 @@ export default function EventDetailPage() {
     try {
       await eventsAPI.register(params.id as string)
       setIsRegistered(true)
+      setIsRegisterOpen(false) // 👈 Close dialog on success
       toast({
         title: "Success!",
         description: "You have successfully registered for this event",
@@ -177,7 +196,7 @@ export default function EventDetailPage() {
                     <p className="text-muted-foreground text-lg leading-relaxed">{event.description}</p>
                   </div>
 
-                  {/* --- RULES & REQUIREMENTS SECTIONS (NEW) --- */}
+                  {/* --- RULES & REQUIREMENTS SECTIONS --- */}
                   {event.rules && (
                     <div className="p-6 rounded-xl bg-red-900/10 border border-red-500/20 backdrop-blur-sm">
                       <h3 className="text-xl font-semibold text-red-400 mb-3 flex items-center gap-2">
@@ -197,7 +216,6 @@ export default function EventDetailPage() {
                       <p className="text-gray-300 whitespace-pre-line leading-relaxed">{event.requirements}</p>
                     </div>
                   )}
-                  {/* ------------------------------------------- */}
 
                   {/* Map */}
                   <Card className="border-[#a56aff]/20 bg-black/50 backdrop-blur-sm overflow-hidden">
@@ -241,17 +259,68 @@ export default function EventDetailPage() {
                         </div>
                       </div>
 
-                      <Button
-                        className="w-full bg-[#a56aff] hover:bg-[#a56aff]/90"
-                        size="lg"
-                        onClick={handleRegister}
-                        disabled={registering || isRegistered}
-                      >
-                        {isRegistered ? "Registered" : registering ? "Registering..." : "Register Now"}
-                      </Button>
+                      {/* 👇 MODIFIED BUTTON / DIALOG LOGIC START 👇 */}
+                      <div className="pt-4">
+                        {event.isExternal ? (
+                          // CASE 1: External Event (Ticketmaster)
+                          <Button 
+                            className="w-full bg-[#00F0FF] hover:bg-[#00F0FF]/80 text-black font-bold shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-300"
+                            onClick={() => window.open(event.externalUrl, "_blank")}
+                          >
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Book on {event.source || "External Site"}
+                          </Button>
+                        ) : (
+                          // CASE 2: Internal Event (Registration Dialog)
+                          <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
+                            <DialogTrigger asChild>
+                              <Button
+                                className="w-full bg-[#a56aff] hover:bg-[#a56aff]/90"
+                                size="lg"
+                                disabled={isRegistered}
+                              >
+                                {isRegistered ? "Registered" : "Register Now"}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="bg-[#1a1a1a] border-[#a56aff]/20 text-white">
+                              <DialogHeader>
+                                <DialogTitle>Register for {event.title}</DialogTitle>
+                                <DialogDescription>
+                                  Confirm your registration details below.
+                                </DialogDescription>
+                              </DialogHeader>
+                              
+                              <div className="space-y-4 py-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-400">Full Name</label>
+                                    <Input value={user?.fullName || ""} disabled className="bg-black/50 border-gray-800" />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-400">Email</label>
+                                    <Input value={user?.email || ""} disabled className="bg-black/50 border-gray-800" />
+                                  </div>
+                              </div>
+                              
+                              <DialogFooter>
+                                <Button variant="outline" onClick={() => setIsRegisterOpen(false)} className="border-gray-700 hover:bg-gray-800">
+                                  Cancel
+                                </Button>
+                                <Button 
+                                  onClick={handleRegister} 
+                                  disabled={registering}
+                                  className="bg-[#a56aff] hover:bg-[#a56aff]/90"
+                                >
+                                  {registering ? "Confirming..." : "Confirm Registration"}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        )}
+                      </div>
+                      {/* 👆 MODIFIED LOGIC END 👆 */}
 
                       {!user && (
-                        <p className="text-xs text-center text-muted-foreground">
+                        <p className="text-xs text-center text-muted-foreground mt-2">
                           You need to be logged in to register
                         </p>
                       )}
@@ -265,8 +334,10 @@ export default function EventDetailPage() {
                         <Users className="h-5 w-5 text-[#a56aff] mr-2" />
                         Organized By
                       </h3>
-                      <p className="text-sm">{event.createdBy?.fullName || "Event Organizer"}</p>
-                      <p className="text-xs text-muted-foreground">{event.createdBy?.email}</p>
+                      <p className="text-sm">{event.source === "Ticketmaster" ? "Ticketmaster" : event.createdBy?.fullName || "Event Organizer"}</p>
+                      <p className="text-xs text-muted-foreground">
+                         {event.source === "Ticketmaster" ? "Verified Partner" : event.createdBy?.email}
+                      </p>
                     </CardContent>
                   </Card>
                 </div>
