@@ -1,13 +1,11 @@
-import Event from "../models/Event";
-import { Parser } from "json2csv";
 import express, { Request, Response } from "express";
 import { authMiddleware, adminMiddleware } from "../lib/auth";
+import User from "../models/User";
+import Event from "../models/Event";
 import Registration from "../models/Registration";
-// We need to import these to ensure models are registered for population
-import "../models/User";
-import "../models/Event";
+import { Parser } from "json2csv";
 
-// 👇 FIX: TypeScript ke liye Interface banaya
+// Types definition fix
 interface AuthRequest extends Request {
   user?: {
     userId: string;
@@ -17,7 +15,41 @@ interface AuthRequest extends Request {
 
 const router = express.Router();
 
-// --- 📊 EXPORT TO CSV (OLD ROUTE RESTORED) ---
+// 1. 📊 GET /api/admin/stats - Dashboard Counts
+router.get("/stats", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  try {
+    const totalUsers = await User.countDocuments({ role: "student" });
+    const totalEvents = await Event.countDocuments();
+    const totalRegistrations = await Registration.countDocuments();
+
+    res.json({
+      totalUsers,
+      totalEvents,
+      totalRegistrations,
+    });
+  } catch (error) {
+    console.error("Stats Error:", error);
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
+});
+
+// 2. 📋 GET /api/admin/registrations - Recent Registrations Table
+router.get("/registrations", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  try {
+    const registrations = await Registration.find()
+      .populate("userId", "fullName email") // Student details
+      .populate("eventId", "title")         // Event details
+      .sort({ registeredAt: -1 })
+      .limit(50); // Show only last 5 in dashboard widget
+
+    res.json({ registrations });
+  } catch (error) {
+    console.error("Registrations Error:", error);
+    res.status(500).json({ error: "Failed to fetch registrations" });
+  }
+});
+
+// 3. 📉 GET /api/admin/export - Download CSV
 router.get("/export", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
   try {
     const registrations = await Registration.find()
@@ -51,8 +83,7 @@ router.get("/export", authMiddleware, adminMiddleware, async (req: Request, res:
   }
 });
 
-// --- 🔄 SYNC TICKETMASTER EVENTS (NEW ROUTE) ---
-// Note: Yahan 'AuthRequest' type use kiya hai error hatane ke liye
+// 4. 🔄 POST /api/admin/sync-ticketmaster - Sync External Events
 router.post("/sync-ticketmaster", authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const API_KEY = process.env.TICKETMASTER_API_KEY;
@@ -60,7 +91,7 @@ router.post("/sync-ticketmaster", authMiddleware, adminMiddleware, async (req: A
       return res.status(500).json({ error: "Ticketmaster API Key is missing in .env" });
     }
 
-    // 1. Fetch Data
+    // Fetch Data
     const response = await fetch(
       `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${API_KEY}&size=20&sort=date,asc&classificationName=music,sports,arts`
     );
@@ -72,7 +103,7 @@ router.post("/sync-ticketmaster", authMiddleware, adminMiddleware, async (req: A
     const data = (await response.json()) as any;
     const tmEvents = data._embedded?.events || [];
 
-    // 2. Loop & Save
+    // Loop & Save
     for (const ev of tmEvents) {
       
       // Category Mapping
@@ -110,7 +141,6 @@ router.post("/sync-ticketmaster", authMiddleware, adminMiddleware, async (req: A
         externalUrl: ev.url,
         externalId: ev.id,
         
-        // 👇 Error fixed here by using req.user!.userId
         createdBy: req.user!.userId, 
         rules: "Check official website for rules.",
         requirements: "Ticket required for entry.",
