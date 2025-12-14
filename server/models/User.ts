@@ -8,61 +8,23 @@ export interface IUser extends Document {
   department: string
   phone: string
   role: "student" | "admin"
-  // --- NEW FIELD ---
-  bookmarks: mongoose.Types.ObjectId[]
-  // -----------------
+  bookmarks: mongoose.Types.ObjectId[] // 👈 Array of Event IDs
   createdAt: Date
 }
 
 const UserSchema = new Schema<IUser>({
-  fullName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true,
-  },
-  passwordHash: {
-    type: String,
-    required: true,
-  },
-  studentId: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  department: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  phone: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  role: {
-    type: String,
-    enum: ["student", "admin"],
-    default: "student",
-  },
-  // --- NEW FIELD DEFINITION ---
-  bookmarks: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Event",
-    },
-  ],
-  // ----------------------------
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  fullName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  passwordHash: { type: String, required: true },
+  studentId: { type: String, default: "Not Provided" },
+  department: { type: String, default: "General" },
+  phone: { type: String, default: "Not Provided" },
+  role: { type: String, enum: ["student", "admin"], default: "student" },
+  
+  // 👇 NEW FIELD ADDED
+  bookmarks: [{ type: Schema.Types.ObjectId, ref: "Event", default: [] }], 
+  
+  createdAt: { type: Date, default: Date.now },
 })
 
 export default mongoose.models.User || mongoose.model<IUser>("User", UserSchema)

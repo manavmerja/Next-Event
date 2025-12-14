@@ -41,6 +41,7 @@ export const authAPI = {
       body: JSON.stringify({ code }),
     }),
     
+    toggleBookmark: (eventId: string) => apiRequest(`/auth/bookmark/${eventId}`, { method: "PUT" }),
 }
 
 export const eventsAPI = {
@@ -130,5 +131,5 @@ export const adminAPI = {
     apiRequest("/admin/sync-ticketmaster", { 
       method: "POST" 
     }),
-    
+
 }
