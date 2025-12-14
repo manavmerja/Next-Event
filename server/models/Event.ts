@@ -13,6 +13,14 @@ export interface IEvent extends Document {
   bannerUrl: string
   rules?: string
   requirements?: string
+  
+  // --- 👇 NEW AGGREGATOR FIELDS INTERFACE 👇 ---
+  isExternal: boolean
+  externalUrl?: string
+  source: string
+  externalId?: string
+  // -------------------------------------------
+
   createdBy: mongoose.Types.ObjectId
   createdAt: Date
 }
@@ -62,10 +70,30 @@ const EventSchema = new Schema<IEvent>({
     required: true,
   },
 
-  // --- 👇 NEW FIELDS ADDED HERE 👇 ---
-  rules: { type: String, default: "" },        // Niyam
-  requirements: { type: String, default: "" }, // Precautions/Requirements
-  // -----------------------------------
+  // --- EXISTING FIELDS ---
+  rules: { type: String, default: "" },        
+  requirements: { type: String, default: "" }, 
+  
+  // --- 👇 NEW AGGREGATOR FIELDS SCHEMA 👇 ---
+  isExternal: { 
+    type: Boolean, 
+    default: false 
+  }, 
+  externalUrl: { 
+    type: String, 
+    default: "" 
+  },
+  source: { 
+    type: String, 
+    default: "NextEvent" // "Ticketmaster", "Eventbrite", etc.
+  },
+  externalId: { 
+    type: String, 
+    unique: true, 
+    sparse: true // Important: Allows internal events to have no externalId without error
+  },
+  // ------------------------------------------
+
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: "User",

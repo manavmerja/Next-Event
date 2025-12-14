@@ -124,4 +124,11 @@ export const adminAPI = {
     apiRequest(`/users/${userId}`, {
       method: "DELETE",
     }),
+
+    // 👇 NEW SYNC FUNCTION 👇
+  syncTicketmaster: () => 
+    apiRequest("/admin/sync-ticketmaster", { 
+      method: "POST" 
+    }),
+    
 }

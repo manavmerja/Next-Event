@@ -1,39 +1,30 @@
-
-import { Parser } from "json2csv"
-import express, { Request, Response } from "express"
-import { authMiddleware, adminMiddleware } from "../lib/auth"
-import Registration from "../models/Registration"
+import Event from "../models/Event";
+import { Parser } from "json2csv";
+import express, { Request, Response } from "express";
+import { authMiddleware, adminMiddleware } from "../lib/auth";
+import Registration from "../models/Registration";
 // We need to import these to ensure models are registered for population
-import "../models/User"
-import "../models/Event"
+import "../models/User";
+import "../models/Event";
 
-const router = express.Router()
+// 👇 FIX: TypeScript ke liye Interface banaya
+interface AuthRequest extends Request {
+  user?: {
+    userId: string;
+    role: string;
+  };
+}
 
-// GET /api/admin/registrations - Get ALL registrations with User and Event details
-router.get("/registrations", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
-  try {
-    const registrations = await Registration.find()
-      .populate("userId", "fullName email studentId") // Get User details
-      .populate("eventId", "title startsAt category") // Get Event details
-      .sort({ registeredAt: -1 }) // Newest first
+const router = express.Router();
 
-    res.json({ registrations })
-  } catch (error) {
-    console.error("Admin registrations error:", error)
-    res.status(500).json({ error: "Server error fetching registrations" })
-  }
-})
-
-// GET /api/admin/export - Download CSV of all registrations
+// --- 📊 EXPORT TO CSV (OLD ROUTE RESTORED) ---
 router.get("/export", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
   try {
-    // 1. Data fetch karo
     const registrations = await Registration.find()
       .populate("userId", "fullName email studentId department phone")
       .populate("eventId", "title startsAt category")
-      .sort({ registeredAt: -1 })
+      .sort({ registeredAt: -1 });
 
-    // 2. Data ko flat object mein convert karo (CSV friendly format)
     const csvData = registrations.map((reg: any) => ({
       "Student Name": reg.userId?.fullName || "N/A",
       "Email": reg.userId?.email || "N/A",
@@ -45,21 +36,102 @@ router.get("/export", authMiddleware, adminMiddleware, async (req: Request, res:
       "Event Date": reg.eventId?.startsAt ? new Date(reg.eventId.startsAt).toLocaleDateString() : "N/A",
       "Registration Date": new Date(reg.registeredAt).toLocaleDateString(),
       "Status": reg.status
-    }))
+    }));
 
-    // 3. JSON ko CSV string mein badlo
-    const json2csvParser = new Parser()
-    const csv = json2csvParser.parse(csvData)
+    const json2csvParser = new Parser();
+    const csv = json2csvParser.parse(csvData);
 
-    // 4. File bhejo (Headers set karke taaki download start ho)
-    res.header('Content-Type', 'text/csv')
-    res.attachment('registrations.csv') // Browser ko batao ki ye file hai
-    return res.send(csv)
+    res.header('Content-Type', 'text/csv');
+    res.attachment('registrations.csv');
+    return res.send(csv);
 
   } catch (error) {
-    console.error("Export CSV error:", error)
-    res.status(500).json({ error: "Server error exporting CSV" })
+    console.error("Export CSV error:", error);
+    res.status(500).json({ error: "Server error exporting CSV" });
   }
-})
+});
 
-export default router
+// --- 🔄 SYNC TICKETMASTER EVENTS (NEW ROUTE) ---
+// Note: Yahan 'AuthRequest' type use kiya hai error hatane ke liye
+router.post("/sync-ticketmaster", authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const API_KEY = process.env.TICKETMASTER_API_KEY;
+    if (!API_KEY) {
+      return res.status(500).json({ error: "Ticketmaster API Key is missing in .env" });
+    }
+
+    // 1. Fetch Data
+    const response = await fetch(
+      `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${API_KEY}&size=20&sort=date,asc&classificationName=music,sports,arts`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Ticketmaster API Error: ${response.statusText}`);
+    }
+
+    const data = (await response.json()) as any;
+    const tmEvents = data._embedded?.events || [];
+
+    // 2. Loop & Save
+    for (const ev of tmEvents) {
+      
+      // Category Mapping
+      let category = "Other";
+      const tmSegment = ev.classifications?.[0]?.segment?.name?.toLowerCase() || "";
+      if (tmSegment.includes("sport")) category = "Sports";
+      else if (tmSegment.includes("music") || tmSegment.includes("arts")) category = "Cultural";
+      else if (tmSegment.includes("workshop")) category = "Seminar";
+
+      // Image
+      const image = ev.images?.find((img: any) => img.width > 600)?.url || ev.images?.[0]?.url || "";
+
+      // Venue
+      const venueObj = ev._embedded?.venues?.[0];
+      const venueName = venueObj?.name || "Unknown Venue";
+      const city = venueObj?.city?.name || "Unknown City";
+      const lat = parseFloat(venueObj?.location?.latitude || "0");
+      const long = parseFloat(venueObj?.location?.longitude || "0");
+
+      const eventData = {
+        title: ev.name,
+        description: `Experience ${ev.name} live at ${venueName}. Book tickets via Ticketmaster.`,
+        category,
+        startsAt: new Date(ev.dates.start.dateTime || Date.now()),
+        endsAt: new Date(ev.dates.start.dateTime || Date.now()),
+        venue: venueName,
+        locationText: `${venueName}, ${city}`,
+        latitude: lat,
+        longitude: long,
+        bannerUrl: image,
+        
+        // Aggregator Fields
+        isExternal: true,
+        source: "Ticketmaster",
+        externalUrl: ev.url,
+        externalId: ev.id,
+        
+        // 👇 Error fixed here by using req.user!.userId
+        createdBy: req.user!.userId, 
+        rules: "Check official website for rules.",
+        requirements: "Ticket required for entry.",
+      };
+
+      // Upsert
+      await Event.findOneAndUpdate(
+        { externalId: ev.id },
+        eventData,
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    }
+
+    res.json({ 
+      message: `Sync successful! Processed ${tmEvents.length} events from Ticketmaster.` 
+    });
+
+  } catch (error: any) {
+    console.error("Sync Error:", error);
+    res.status(500).json({ error: error.message || "Failed to sync events" });
+  }
+});
+
+export default router;
