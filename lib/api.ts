@@ -1,135 +1,81 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://next-event-backend.onrender.com/api"
 
-
-export async function apiRequest(endpoint: string, options: RequestInit = {}) {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  })
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    throw new Error(data.error || "An error occurred")
+async function apiRequest(endpoint: string, options: RequestInit = {}) {
+  // Get token from cookies (handled by browser automatically for httpOnly) or localStorage if you implemented that.
+  // Since we use httpOnly cookies, we just need credentials: "include"
+  
+  const defaultHeaders = {
+    "Content-Type": "application/json",
   }
 
-  return data
+  const config = {
+    ...options,
+    headers: {
+      ...defaultHeaders,
+      ...options.headers,
+    },
+    credentials: "include" as RequestCredentials, // Important for cookies
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, config)
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw new Error(errorData.error || errorData.message || "API Request Failed")
+  }
+
+  // Handle CSV/Blob responses
+  const contentType = response.headers.get("content-type")
+  if (contentType && contentType.includes("text/csv")) {
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `registrations-${new Date().toISOString().split("T")[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    return { message: "Download started" }
+  }
+
+  return response.json()
 }
 
 export const authAPI = {
-  signup: (userData: any) =>
-    apiRequest("/auth/signup", {
-      method: "POST",
-      body: JSON.stringify(userData),
-    }),
-  login: (credentials: any) =>
-    apiRequest("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(credentials),
-    }),
+  login: (credentials: any) => apiRequest("/auth/login", { method: "POST", body: JSON.stringify(credentials) }),
+  signup: (data: any) => apiRequest("/auth/signup", { method: "POST", body: JSON.stringify(data) }),
   logout: () => apiRequest("/auth/logout", { method: "POST" }),
   getMe: () => apiRequest("/auth/me"),
-
-  // --- NEW FUNCTION ---
-  loginWithGitHub: (code: string) => 
-    apiRequest("/auth/github", {
-      method: "POST",
-      body: JSON.stringify({ code }),
-    }),
-    
-    toggleBookmark: (eventId: string) => apiRequest(`/auth/bookmark/${eventId}`, { method: "PUT" }),
+  loginWithGitHub: (code: string) => apiRequest("/auth/github", { method: "POST", body: JSON.stringify({ code }) }),
+  
+  // Bookmark Toggle
+  toggleBookmark: (eventId: string) => apiRequest(`/auth/bookmark/${eventId}`, { method: "PUT" }),
 }
 
 export const eventsAPI = {
   getAll: (params?: any) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/events${query ? `?${query}` : ""}`)
+    const queryString = params ? "?" + new URLSearchParams(params).toString() : ""
+    return apiRequest(`/events${queryString}`)
   },
   getById: (id: string) => apiRequest(`/events/${id}`),
-  create: (eventData: any) =>
-    apiRequest("/events", {
-      method: "POST",
-      body: JSON.stringify(eventData),
-    }),
-  update: (id: string, eventData: any) =>
-    apiRequest(`/events/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(eventData),
-    }),
+  create: (data: any) => apiRequest("/events", { method: "POST", body: JSON.stringify(data) }),
   delete: (id: string) => apiRequest(`/events/${id}`, { method: "DELETE" }),
-  register: (id: string) => apiRequest(`/events/${id}/register`, { method: "POST" }),
-  cancelRegistration: (id: string) => apiRequest(`/events/${id}/register`, { method: "DELETE" }),
-
-  // --- NEW FUNCTION ---
-  toggleBookmark: (id: string) => apiRequest(`/events/${id}/bookmark`, { method: "POST" }),
-
-  // 1. Reviews Laao
-  getReviews: (id: string) => apiRequest(`/events/${id}/reviews`),
-
-  // 2. Naya Review Bhejo
-  addReview: (id: string, data: { rating: number; comment: string }) =>
-    apiRequest(`/events/${id}/reviews`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
   
+  // Fallback for direct registration calls if used anywhere
+  register: (eventId: string) => apiRequest("/registrations", { method: "POST", body: JSON.stringify({ eventId }) }),
 }
 
-export const usersAPI = {
-  getMyRegistrations: () => apiRequest("/users/me/registrations"),
+// 👇 THIS WAS MISSING 👇
+export const registrationsAPI = {
+  register: (eventId: string) => apiRequest("/registrations", { method: "POST", body: JSON.stringify({ eventId }) }),
+  checkStatus: (eventId: string) => apiRequest(`/registrations/status/${eventId}`),
+  getMyRegistrations: () => apiRequest("/registrations/my"),
 }
-
-// Add this new object to your lib/api.ts file
+// 👆 ------------------ 👆
 
 export const adminAPI = {
-  getAllUsers: () => apiRequest("/users"),
-
+  getStats: () => apiRequest("/admin/stats"),
   getAllRegistrations: () => apiRequest("/admin/registrations"),
-
-  // --- NEW FUNCTION ---
-  // Note: Hum yahan 'fetch' direct use karenge kyunki humein JSON nahi, Blob (file) chahiye
-  downloadCSV: async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/export`, {
-      method: "GET",
-      headers: {
-        // Auth cookie automatically jaayega agar 'credentials: include' ho
-      },
-      // Credentials zaroori hai taaki cookie saath jaaye
-      credentials: "include" 
-    })
-    
-    if (!response.ok) throw new Error("Export failed")
-    
-    // File download logic
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `registrations-${new Date().toISOString().split('T')[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-  },
-  
-  updateUserRole: (userId: string, newRole: string) =>
-    apiRequest(`/users/${userId}`, {
-      method: "PATCH",
-      body: JSON.stringify({ role: newRole }),
-    }),
-
-  deleteUser: (userId: string) =>
-    apiRequest(`/users/${userId}`, {
-      method: "DELETE",
-    }),
-
-    // 👇 NEW SYNC FUNCTION 👇
-  syncTicketmaster: () => 
-    apiRequest("/admin/sync-ticketmaster", { 
-      method: "POST" 
-    }),
-
+  downloadCSV: () => apiRequest("/admin/export"),
+  syncTicketmaster: () => apiRequest("/admin/sync-ticketmaster", { method: "POST" }),
 }

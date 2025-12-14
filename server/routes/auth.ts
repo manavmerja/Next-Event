@@ -86,14 +86,19 @@ router.post("/login", async (req: Request, res: Response) => {
   }
 })
 
-// 3. GET ME (User Profile)
+// 3. GET ME (User Profile with Populated Bookmarks)
 router.get("/me", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.user?.userId).select("-passwordHash")
+    // 👇 Change: .populate('bookmarks') add kiya
+    const user = await User.findById(req.user?.userId)
+      .select("-passwordHash")
+      .populate("bookmarks") 
+    
     if (!user) return res.status(404).json({ error: "User not found" })
     
     res.json({ user })
   } catch (error) {
+    console.error("Me Error:", error) 
     res.status(500).json({ error: "Server error" })
   }
 })
