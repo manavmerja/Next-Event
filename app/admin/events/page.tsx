@@ -127,7 +127,7 @@ export default function ManageEventsPage() {
                   <TableHeader>
                     <TableRow className="border-[#a56aff]/20 hover:bg-transparent">
                       <TableHead className="text-gray-400">Event Title</TableHead>
-                      <TableHead className="text-gray-400">Source</TableHead> {/* New Column */}
+                      <TableHead className="text-gray-400">Source</TableHead>
                       <TableHead className="text-gray-400">Category</TableHead>
                       <TableHead className="text-gray-400">Starts At</TableHead>
                       <TableHead className="text-gray-400">Venue</TableHead>
@@ -159,7 +159,7 @@ export default function ManageEventsPage() {
                             </Badge>
                           )}
                         </TableCell>
-                        {/* 👆 --------------------- 👆 */}
+                        
 
                         <TableCell className="text-gray-300">{event.category}</TableCell>
                         <TableCell className="text-gray-300">{new Date(event.startsAt).toLocaleDateString()}</TableCell>
