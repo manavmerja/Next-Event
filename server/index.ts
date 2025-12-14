@@ -8,24 +8,28 @@ import cookieParser from "cookie-parser"
 import authRoutes from "./routes/auth"
 import eventRoutes from "./routes/events"
 import adminRoutes from "./routes/admin"
-import registrationRoutes from "./routes/registrations" // 👈 1. IMPORT THIS
+import registrationRoutes from "./routes/registrations"
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// Middleware
+// 👇 FIX: CORS Configuration Updated
 app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://next-event-st.vercel.app", // Aapka Frontend URL
-      process.env.FRONTEND_URL || "",
+      "https://next-event-st.vercel.app",
+      "https://v0-event-aggregator-web-app.vercel.app", // 👈 NEW URL ADDED HERE (From your error log)
+      process.env.FRONTEND_URL || "", 
     ],
-    credentials: true,
+    credentials: true, // Cookies allow karne ke liye zaroori hai
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 )
+
 app.use(express.json())
 app.use(cookieParser())
 
@@ -39,14 +43,14 @@ mongoose
 app.use("/api/auth", authRoutes)
 app.use("/api/events", eventRoutes)
 app.use("/api/admin", adminRoutes)
-app.use("/api/registrations", registrationRoutes) // 👈 2. ADD THIS LINE (Yehi Missing Tha)
+app.use("/api/registrations", registrationRoutes)
 
 // Health Check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running" })
 })
 
-// Self Ping Mechanism (To keep Render awake)
+// Self Ping Logic
 const SERVER_URL = "https://next-event-backend.onrender.com/api/health";
 const keepAlive = () => {
   if (process.env.NODE_ENV === 'production') {
