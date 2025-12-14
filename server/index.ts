@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth"
 import eventRoutes from "./routes/events"
 import adminRoutes from "./routes/admin"
 import registrationRoutes from "./routes/registrations"
+import reviewRoutes from "./routes/reviews"
 
 dotenv.config()
 
@@ -44,6 +45,7 @@ app.use("/api/auth", authRoutes)
 app.use("/api/events", eventRoutes)
 app.use("/api/admin", adminRoutes)
 app.use("/api/registrations", registrationRoutes)
+app.use("/api/reviews", reviewRoutes)
 
 // Health Check
 app.get("/api/health", (req, res) => {

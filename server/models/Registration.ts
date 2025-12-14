@@ -3,7 +3,7 @@ import mongoose, { Schema, type Document } from "mongoose"
 export interface IRegistration extends Document {
   userId: mongoose.Types.ObjectId
   eventId: mongoose.Types.ObjectId
-  status: "registered" | "cancelled"
+  status: "confirmed" | "cancelled" | "pending"
   registeredAt: Date
 }
 
@@ -20,8 +20,8 @@ const RegistrationSchema = new Schema<IRegistration>({
   },
   status: {
     type: String,
-    enum: ["registered", "cancelled"],
-    default: "registered",
+    enum: ["confirmed", "cancelled", "pending"],
+    default: "confirmed",
   },
   registeredAt: {
     type: Date,
@@ -29,7 +29,7 @@ const RegistrationSchema = new Schema<IRegistration>({
   },
 })
 
-// Compound unique index to prevent duplicate registrations
+// Unique compound index: Ek user ek event mein ek hi baar register kar sakta hai
 RegistrationSchema.index({ userId: 1, eventId: 1 }, { unique: true })
 
 export default mongoose.models.Registration || mongoose.model<IRegistration>("Registration", RegistrationSchema)
