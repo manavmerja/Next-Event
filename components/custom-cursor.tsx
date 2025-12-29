@@ -36,6 +36,8 @@ export function CustomCursor() {
     }
   }, [])
 
+
+
   return (
     <>
       <motion.div
@@ -72,3 +74,5 @@ export function CustomCursor() {
     </>
   )
 }
+
+
