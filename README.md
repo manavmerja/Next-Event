@@ -195,4 +195,4 @@ Open a Pull Request
 📞 Contact
 Manav Merja
 
-<div align="center"> <i>Built with ❤️, TypeScript, and lots of ☕ Chaai</i> </div>
+<div align="center"> <i>Built with, TypeScript, and lots of ☕ Chaai</i> </div>
